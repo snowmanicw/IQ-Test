@@ -337,16 +337,25 @@
     }
   }
 
-  function getCanvasCoords(e) {
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      x: (touch.clientX - rect.left) * scaleX,
-      y: (touch.clientY - rect.top) * scaleY
-    };
-  }
+ function getCanvasCoords(e) {
+  const rect = canvas.getBoundingClientRect();
+
+  const scale = Math.min(
+    rect.width / canvas.width,
+    rect.height / canvas.height
+  );
+
+  const displayedWidth = canvas.width * scale;
+  const displayedHeight = canvas.height * scale;
+
+  const offsetX = (rect.width - displayedWidth) / 2;
+  const offsetY = (rect.height - displayedHeight) / 2;
+
+  return {
+    x: (e.clientX - rect.left - offsetX) / scale,
+    y: (e.clientY - rect.top - offsetY) / scale
+  };
+}
 
   window.addEventListener("pointerdown", (e) => {
     e.preventDefault();
