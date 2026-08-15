@@ -129,38 +129,74 @@
   }
 
   let jumpscareOsc = null;
+  let jumpscareGain = null;
+
   function startJumpscareSound() {
     if (!audioCtx) return;
     try {
+      const now = audioCtx.currentTime;
+
+      // Master Volume Gain (Boosted to Max Output)
+      jumpscareGain = audioCtx.createGain();
+      jumpscareGain.gain.setValueAtTime(3.5, now); // Overdriven gain boost
+
+      // Distortion Curve for maximum harshness/loudness
+      const distortion = audioCtx.createWaveShaper();
+      const samples = 44100;
+      const curve = new Float32Array(samples);
+      const deg = Math.PI / 180;
+      for (let i = 0; i < samples; ++i) {
+        let x = (i * 2) / samples - 1;
+        curve[i] = ((3 + 50) * x * 20 * deg) / (Math.PI + 50 * Math.abs(x));
+      }
+      distortion.curve = curve;
+      distortion.oversample = '4x';
+
+      // 1. High-frequency Sawtooth Screech Oscillator
+      const osc1 = audioCtx.createOscillator();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(2800, now);
+      osc1.frequency.exponentialRampToValueAtTime(1200, now + 3.5);
+
+      // 2. Piercing Square Wave Oscillator
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(3500, now);
+      osc2.frequency.exponentialRampToValueAtTime(1800, now + 3.5);
+
+      // 3. Harsh White Noise Layer
       const bufferSize = audioCtx.sampleRate * 3.5;
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         output[i] = Math.random() * 2 - 1;
       }
-      const whiteNoise = audioCtx.createBufferSource();
-      whiteNoise.buffer = buffer;
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
 
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = "bandpass";
-      filter.frequency.value = 1000;
-      filter.Q.value = 3;
+      // Connect all sound generators through distortion to destination
+      osc1.connect(distortion);
+      osc2.connect(distortion);
+      noise.connect(distortion);
 
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+      distortion.connect(jumpscareGain);
+      jumpscareGain.connect(audioCtx.destination);
 
-      whiteNoise.connect(filter);
-      filter.connect(gain);
-      gain.connect(audioCtx.destination);
+      osc1.start(now);
+      osc2.start(now);
+      noise.start(now);
 
-      whiteNoise.start();
-      jumpscareOsc = whiteNoise;
+      jumpscareOsc = { osc1, osc2, noise };
     } catch(e) {}
   }
 
   function stopJumpscareSound() {
     if (jumpscareOsc) {
-      try { jumpscareOsc.stop(); } catch(e) {}
+      try {
+        jumpscareOsc.osc1.stop();
+        jumpscareOsc.osc2.stop();
+        jumpscareOsc.noise.stop();
+      } catch(e) {}
       jumpscareOsc = null;
     }
   }
