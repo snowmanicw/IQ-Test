@@ -11,6 +11,7 @@
       -webkit-user-select: none;
       touch-action: none;
     }
+
     body, html {
       margin: 0;
       padding: 0;
@@ -24,6 +25,7 @@
       justify-content: center;
       align-items: center;
     }
+
     #game-container {
       position: relative;
       width: 100vw;
@@ -32,6 +34,7 @@
       justify-content: center;
       align-items: center;
     }
+
     canvas {
       width: 100%;
       height: 100%;
@@ -40,6 +43,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <div id="game-container">
@@ -56,12 +60,13 @@
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if (audioCtx.state === 'suspended') {
+
+    if (audioCtx.state === "suspended") {
       audioCtx.resume();
     }
   }
 
-  const INTRO_AUDIO_SRC = "data:audio/mp3;base64,SUQ3BAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//5AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAInfoAAAA8AAAAQUAAC8mOjs7Ozs7Ozt4e3t7e3t7e3uEhISExMTExMTHx8fHx8fHx8fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19cAAAAA3L13/wAAAABY3pQpAAAAAAAAAAAAAAAAAAAAAG8yN2dtZm9vaWVub2FsZ2hkZmllc29tcHVxcXp3eHt7fX97f4GEhoiKi46PkJGSlZicoKWmp6urr6+wsq+xs7S2tr69v72/wsPDxsnKzM3P0NLU1tnZ2tvb3ODg3+Dl5+jpa2xvcnR2d3l6e35/goOFh4mKi46PkpOWl5qbm5yfnqCipKWmp6qrrK2urbCxsrO0tra3uLu8vr/AwsPEiIeHiImKiIeIj4+QkJKUlZaXm5yent/g4uPj5OXl5ufo6err6+zt7+/w8vLy8/T09vfg4uL///////////////////////////////////////////////////8AAAA8TEFNRTMuMTAwA1sAAAAAAAAAABSAJAYkLwAAL3AAAAAAt77fWwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//7AAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARXh0cmFzAABJbmZvAAAAAQAAAAEAAAAA/wAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//mRAAAAE4A3G3mJABXw3fOncSAAkL1R2mY/IAIXsjtMw/EAAAAAAAwDA43m8I8X4uXww3+PxeOIn+8f8//5IQQggh/3//f//////////////////////2EAgP0AQAA8B/+PgAfv4P/4AEP4AQAAP4AAAAAAQ4f4f/AAB38P/4AC3e/4A/4Af/AD//////8AAAAAAYY8f2/xP/4444n/E4iIeJx/f+P//////mRAfAAAAAAC/sAAG/sAAAAAEAAAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/++ZM4A8EFiN2m5/IAP5qDtdweABR5L1i4+xsQfXUvBx/T2QAxJd2f4A08Lg8BgeDwIwxG/e/77/ve///v/43+/97//vve92yIn/6eP6eP//y///l/p38p9Of2a2eWf3IQQe+33+v/m33/m3/zeze5f2f4k5Xm//+34m5f8n8v+v///+v+f2f/+3f9f9yE493b827/+SADk3LgXf/S91X5v/8v+AAv/l/q/iABv/v2/4AGbS9f//yv/032f//8m/x/7f0/p/f+m//p083/m31f5v/032////279Of6fX///q2//e3f/9/5Nze7fy/X/1f5sAgA/9v///93/+7/q/sAgAH/92////q///v//4AFAAY3L072////x/9v2/kAM2v/p/yAD08y7///3//2/7/+Tfy/7f/0/+31f5v9/X/m3////s36a/m///03///7/3///+Tfy/l+///zfb2f3/k/X2/2//////v3///4AHv//y/p/yAABe393/9/S/4///232AH/m/5d/+AAL06+/m///q/i///k/+I//zfx/3/p/m/r///+m//f///8m//p/f/+X07f///4f/5Pv///q3+f3f///2/+5f9///29f/1/5AAN1f/f/S//f8///y/YAD4gAAB/0/5N//AAt8X/N/5AAYmbf///6v/9/3+T/v03+L/T6bf/3/y///m///8m/3///t3/V/m/+b/1////4j//L+/v//m//////z+3f/v+Tf/f//S/3//3f2//v9t9///f/83+//y/8gAvy//+v///X+v+rf0AAN/9v9v/1//7///f8AB44p////5v///18v+v9/6v6f/5//2/93///f3//N///Tf//k3/v/6v+v//E/2////5v9f///2///1/mv3+X5f1/+7f///9m////YAD1/////N////9/8P4AAB8v9f///f03/f9/vAAe/p////l/+3f/3+v/+vf9v6f//+X//z/9/f/83/823//5Nf//03/f///3/8v///7f/y///7////X632+/m/23/////2/+m/5//4AF/N/////N////9//4AC3x3///5/f///v/gAPf1/////e3/f///+vf9/6v8/9//v//9/f/yb/+b/3+Tf/9v//6b//+f//83//7///f/m/2/f025f1/+X///7fv/+X/X/p/+b//pAAve/+v///2/////MAAeb/v/3/y/v//3+YAAm/X3///6///f8P/+AC/9f////e/+X/f//9f/N/6v+f/3f83/+3/9f///N/f233//N3///f///q38////N///9/f///e2+/m//m9/Tf/+X/03135fb/9N+b4f00AMaI8f1kAAAAA4s0fH2/yUBAAEs0fH22/m/9m26b/f2/+38392/683/+b+//4ABy3/9/f+rf/+7/3//uAAU/s//8n+b/yfy//+b3/P8//m/3/u3/+3/3///93+3v///m3/9/////+v/u///z//3///329v3m//J///Tfpvy///t////m//T/m/9312AM/2/+vf/r/r//+7/+8ABb8/1/m///k3//7f1/170/3///8383/+7/7//u/+///v/183///yb/+7///+X/+7///8//6///+3t/fT/k/Xk37///yb/////pvyb9//k//XUA//vf6f/+rf/+///3f+8ADm///m/+f/f+v//3v9/+r/+r/+T/+3/y/7///v/v/+7/vf///N//t//v/f/y/3///5/5v///e2+vf9/k///S////v/N///6f/6///6b6ADvf1///7v///+//93+4ABf/f//k//27/0/9f3/+3/83/+7///v/+7//e/73///yb///9/+//Xf5v///m/2//3/+1vb/b/+v2f//6b//1////Tf/4P/pv39ADm////6////v3/u//9/AAL/b/799/m////v+//u//8v/+//v/7v+///97/vf/5/3/+7/1/+v/f/+3/6//f////5vv/m/x/+n3/////+b3//9f4P8n3p/oAf///0//+///+v///38AB8v/X3vvv/3///+/v/2//z+/v/f/3///f++///N/v9/+////f99//X/+//0///3///m/v8f+f2///p/+///m///m////g+//6AH8f/v/+r/9////83/+kAC/vf4/++/vf3/v/6///7/73//f+///f+///vb/b//P//4/93///9//3///y7//p/+f///yb9///pv/0///S/4P+f//SAB/8v///v///v/v+//e8AAvf5vXvf9//2/v/vf3////v///v//2/3//k/9f1//8f8v/////+Xf3//v/6/4f3///v/82/3/v///8313////pvy/7wAf////+//9v////+///gACe/m9+9/////9//+39f///v///+7//f2/y/+/f2///3///9/////2/N///vf/n/m/P/////3/1/b/b///3f3+v///831/ugB//6///7////v///9vwAHy433ve////2//3+7/////+v+//7///v2//y++//////+r/////+X///L////3/////+3///y/9v////1///f////oAf1//v///3/+/+f/+8AD//m93ve/////7//1///9+X/////+X+vv+vv//////f//////3/0//8///v7/3/////9////+//////X//93/+X//+gB/m////X/+f3/m//6AAnf33vvv/////vf3//7/93///v//f+/L/++//f//////f/+/v///9/+Xf/0//3////+v/////m/////3/f/f/k//3f6AH+3//v9//1/b/pv//gAC9+9fve3///+/v///++////+///2/l993+3/3///3/++f/+///29/0///99+///r///3///f///+n/v///z3/3/SAD//+v+X/X/+T//m/f0AAne81++/////m/+///v//////+38vvvf9/+////v+3/////y5t////ff1//////f//n///9///5/X///+m/+SABf13/+m////pv///3gANvf9///+73//9/////+///////t/L/f/3/////v//b/////v3m/++339////+///9f/9/3///2/+7///+X/+SAAf/+m/8f/+7/v//3/AA/u+9v//2///8//////+/+7///2+X5vf9///3////v/f////83m+/3ff1f///+7/11//9////5f3//f/+X//SAD///p3/5v9N////v8AAvfffff+/v////m//////+v//+vfNf3/9f/+/////3/+///////13/+3/+//////5/f+/v////+X/23/b//SAA5/yff/T//f+v//3AAe//Xfff3////f//v//////2+//1/L9v+////+////f/v/7//29//fvv3///1//3//9//////n///v///SAAd9/6ff/Jvv3//93AAa/X////7///9v+//////f///3+a39//f3///f////8vf/9/f///7fvv/3///vf/+v/3////0//23//6QAEP9Nf33//k//yAAL//X////4///m//////f+//y9f7+//9/////f/v/v/3373////v5v/+//////2/+f/1///N3/pv/SAAXm////+rfm3/+X4AA2v/////+3//+//////m///X9f6//f////v////7////v/////m///1////9f7//f/+Xf+m/6QAdf/3/+n+b1///SAA//ff//v/3///+3/33+///9f9393/9/f3//f////v/7+3////m/+///3f3/+/////k//N3/4Af+////pv6f/+v4AA/fvv7f3/9v///9/++v1////v9f0/++/+/f3/////f////v//vf+/f////y///f9///13/pv/4AG/+///033/+X/AA4f/2////9///vf/+331v///+3X2+/99//v+//+/////X////vX/vf/+7/m///y9//f0/eAH3/+f//k/f/5f8AD4ff///f//3////+/9df7////1X9/0//v++////+37//////v179///2/+3////y733/SAAP7/+7/+v/1v94AD4////33//v/+///+2/X/9f///91e9//v+///9/233////+v2vvvf31//23////k//SABf47f2/4//138AD1//f////3/+v//v//v9//f/+v/tf3f//vv//+///+//////fL///39////v03/0/SAA16f/X/jf/pvy/AAvX/+3///9//3///v/9fvv/+r73f/u/+333////+7////3///N////vv/0/+0AHf38v/J/+Xf4AG//ff+//f//+3//9/ff3/X//v6+//fv199/33/f/f/v////93/9/////N33/+T/0gA5d/39N/+7/y/AA19//3//v/f3///++//v+v9vv+fXv+//+//33//f//v//v3////+v////pv/9fSAA8/+v/L3/vvy3AAN1//t///f/7f//v///7+Xf3//+//7//2/vf////v//9/////9f///8u9P/SAANfv////x//lvYAC//1//ff//7/v///9/v//13///0//vv33/////f7///u//f////k//7/SAA7/2/f13///3+AAu//3+3//9//v///+ffv1f///9/++99//////f2+//37////1f/X/SABu/n9//3/k//5f4AA5/2/2///3/+3///3+/13fX//+//v+//3///////2///X/+v+3/oAd/+9vf///k////AALf3++/3+//f///9/9ffdf/93//vv33//////+///7X/83/X0AAu++/+v/+T/+v23AAPP//399////+3///7//d333//9///f///2+/+9/f+//2/ff6AA1fff/+n+/4/+f+vAAevf//vf3/3///v///+/X3/39f///v+/332/f3/7///7ff9AALv33+/2/p///19f2AAW////ff9f////v/+//vf//3v/+3///vv////vfff9//r2AAMfv/ff+X/+///X+AAAe77///f9v/f//9/+7/9d///ff/e3///f////93f/SAAxfu//pv5v/+////f8AA+vf/+//vvff/v/f///X3////39e+////vvvv/f/8/+gAJv33038m///f///y/AA/f3f9f3///v/+3///X+3////7+9/f7f/2//X2+AAM+/76/pv0/k////0gAL++////f9f3/f/+3/ff++v/f//v//37///X/4fSAA039f9///S/+X/94ACz33//X1////v/2///r++/ff3////9//2///g+/AANX/ff0/v39////f4AAf+v7/9/////+3///9////v/vv//7////+S/0gAR+/pv////y//////f+AAH6/X7///+//f/+3//++//3v///vv///0v/SABrfuv+m////3/9+///94ADe//fffffvv/f/+/+v91ff/f3f33///2/k/0gAVffpv/k/+23//////f/eAAm/vvf3////vv//277/X3f9///f3//82+0ABbf9/+X/3///pv//+X///4AC/33//f///3+v/73/v//f/9//9///934ABqvv/m////3//1v//7//v/34AA///1+//f///f/++/331/X3//2////3f2gALr//vf1////2/p////f4f4AAx/+v1///+//9/f3//f/fff9f////4//SAAM/+///x/v/+f////f3f/+8AC///3f3f////+7/+vfff/////v/k/0gAff////4////v//3/NfX/+8AD//93/vf9////3v//d////u/9IAD77+v///v+73///////X//4AA1////f/////f/++/+////f//p/0gAY//73v/x//+/4////X/7/2/AA/f//3/+3/v//9/+7/0AAp/X///3/+X1//////v/31////AAf/+v+vv///3+vff//v/t/SABD///m/+7////f/X///////f//vAA//+/vv///9f/+//v/+/6AAY39/////9f///3f////72v///0gA3/fff+//X/vvf//////3////8v4AB//9vf/////3+//v++//SAAw/e/f/+3/+////////3/73/pAAt+/1/9/3/9fffff/3///////9v/SAA7f3f/////7////vv///kAHdff3/7/+m//9f/+////SAAxm////0////+v////f////+/p/pABn+/39v/+3//+/r//4AC23/9////9///1/+0AG9f/6f/3/1//7/SAA+5/vv3/+v7//f/+0ACa//9f/+7//X//4AD133/u+m+2///pAAv0//////+3+/m/7wAbv2///5///u//m/SADa7////+//7///wAN9////+X/+3/k3p/kABt9////////y///f4AC2vf+//vv3///1//pAA///5////+3//k9IADr////m///v7/+SAAt3/v1///+//m/+S/4AD////4/////0/0gAnb/9///+f/v///+8ADu39f//9v//f/3/+0AE////f///+//SAAr9//v//m/////+gAHa7e////9///93v4AD0m+/X//+//t3//m/0gAf8vf///f/+T//SABvf//S///S/2/+///4AC3X/+f/2/+/////+gAPf3////1//9IAG5vv3/+X/+S+SAAq+3f//u/+/////6AAV9v/6////p/SAD5//////1///9P0gA/9e7////pvvf///+AAA3/////u/////+0AEbf/X3//9////pAAf39////f+////4ACfX//2/7//e/+gAS2////29f3//9IAIn/X////1//m/+kAD4m/+vf2/+n9IAOp+/9///X///4AE7m39/9//9IAGn/3f///1/+SAD61/0////v/9IAOb3///2/7f1//////8ACm79//7//e0AB3r9////v/4AEP///9f/+/SAB1///f///+///+0ACa//f3//9IAD1++f///9IAOp///1/+kAG4//vv3/+SAAe////0///SAAM3///2/+SAAR/f9/9/m/+kAF///7//SAAH7///3/+gAYv/////+kAGa/9?=";
+  const INTRO_AUDIO_SRC = "data:audio/mp3;base64,SUQ3BAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//5AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAInfoAAAA8AAAAQUAAC8mOjs7Ozs7Ozt4e3t7e3t7e3uEhISExMTExMTHx8fHx8fHx8fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19cAAAAA3L13/wAAAABY3pQpAAAAAAAAAAAAAAAAAAAAAG8yN2dtZm9vaWVub2FsZ2hkZmllc29tcHVxcXp3eHt7fX97f4GEhoiKi46PkJGSlZicoKWmp6urr6+wsq+xs7S2tr69v72/wsPDxsnKzM3P0NLU1tnZ2tvb3ODg3+Dl5+jpa2xvcnR2d3l6e35/goOFh4mKi46PkpOWl5qbm5yfnqCipKWmp6qrrK2urbCxsrO0tra3uLu8vr/AwsPEiIeHiImKiIeIj4+QkJKUlZaXm5yent/g4uPj5OXl5ufo6err6+zt7+/w8vLy8/T09vfg4uL///////////////////////////////////////////////////8AAAA8TEFNRTMuMTAwA1sAAAAAAAAAABSAJAYkLwAAL3AAAAAAt77fWwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//7AAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARXh0cmFzAABJbmZvAAAAAQAAAAEAAAAA/wAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//mRAAAAE4A3G3mJABXw3fOncSAAkL1R2mY/IAIXsjtMw/EAAAAAAAwDA43m8I8X4uXww3+PxeOIn+8f8//5IQQggh/3//f//////////////////////2EAgP0AQAA8B/+PgAfv4P/4AEP4AQAAP4AAAAAAQ4f4f/AAB38P/4AC3e/4A/4Af/AD//////8AAAAAAYY8f2/xP/4444n/E4iIeJx/f+P//////mRAfAAAAAAC/sAAG/sAAAAAEAAAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/++ZM4A8EFiN2m5/IAP5qDtdweABR5L1i4+xsQfXUvBx/T2QAxJd2f4A08Lg8BgeDwIwxG/e/77/ve///v/43+/97//vve92yIn/6eP6eP//y///l/p38p9Of2a2eWf3IQQe+33+v/m33/m3/zeze5f2f4k5Xm//+34m5f8n8v+v///+v+f2f/+3f9f9yE493b827/+SADk3LgXf/S91X5v/8v+AAv/l/q/iABv/v2/4AGbS9f//yv/032f//8m/x/7f0/p/f+m//p083/m31f5v/032////279Of6fX///q2//e3f/9/5Nze7fy/X/1f5sAgA/9v///93/+7/q/sAgAH/92////q///v//4AFAAY3L072////x/9v2/kAM2v/p/yAD08y7///3//2/7/+Tfy/7f/0/+31f5v9/X/m3////s36a/m///03///7/3///+Tfy/l+///zfb2f3/k/X2/2//////v3///4AHv//y/p/yAABe393/9/S/4///232AH/m/5d/+AAL06+/m///q/i///k/+I//zfx/3/p/m/r///+m//f///8m//p/f/+X07f///4f/5Pv///q3+f3f///2/+5f9///29f/1/5AAN1f/f/S//f8///y/YAD4gAAB/0/5N//AAt8X/N/5AAYmbf///6v/9/3+T/v03+L/T6bf/3/y///m///8m/3///t3/V/m/+b/1////4j//L+/v//m//////z+3f/v+Tf/f//S/3//3f2//v9t9///f/83+//y/8gAvy//+v///X+v+rf0AAN/9v9v/1//7///f8AB44p////5v///18v+v9/6v6f/5//2/93///f3//N///Tf//k3/v/6v+v//E/2////5v9f///2///1/mv3+X5f1/+7f///9m////YAD1/////N////9/8P4AAB8v9f///f03/f9/vAAe/p////l/+3f/3+v/+vf9v6f//+X//z/9/f/83/823//5Nf//03/f///3/8v///7f/y///7////X632+/m/23/////2/+m/5//4AF/N/////N////9//4AC3x3///5/f///v/gAPf1/////e3/f///+vf9/6v8/9//v//9/f/yb/+b/3+Tf/9v//6b//+f//83//7///f/m/2/f025f1/+X///7fv/+X/X/p/+b//pAAve/+v///2/////MAAeb/v/3/y/v//3+YAAm/X3///6///f8P/+AC/9f////e/+X/f//9f/N/6v+f/3f83/+3/9f///N/f233//N3///f///q38////N///9/f///e2+/m//m9/Tf/+X/03135fb/9N+b4f00AMaI8f1kAAAAA4s0fH2/yUBAAEs0fH22/m/9m26b/f2/+38392/683/+b+//4ABy3/9/f+rf/+7/3//uAAU/s//8n+b/yfy//+b3/P8//m/3/u3/+3/3///93+3v///m3/9/////+v/u///z//3///329v3m//J///Tfpvy///t////m//T/m/9312AM/2/+vf/r/r//+7/+8ABb8/1/m///k3//7f1/170/3///8383/+7/7//u/+///v/183///yb/+7///+X/+7///8//6///+3t/fT/k/Xk37///yb/////pvyb9//k//XUA//vf6f/+rf/+///3f+8ADm///m/+f/f+v//3v9/+r/+r/+T/+3/y/7///v/v/+7/vf///N//t//v/f/y/3///5/5v///e2+vf9/k///S////v/N///6f/6///6b6ADvf1///7v///+//93+4ABf/f//k//27/0/9f3/+3/83/+7///v/+7//e/73///yb///9/+//Xf5v///m/2//3/+1vb/b/+v2f//6b//1////Tf/4P/pv39ADm////6////v3/u//9/AAL/b/799/m////v+//u//8v/+//v/7v+///97/vf/5/3/+7/1/+v/f/+3/6//f////5vv/m/x/+n3/////+b3//9f4P8n3p/oAf///0//+///+v///38AB8v/X3vvv/3///+/v/2//z+/v/f/3///f++///N/v9/+////f99//X/+//0///3///m/v8f+f2///p/+///m///m////g+//6AH8f/v/+r/9////83/+kAC/vf4/++/vf3/v/6///7/73//f+///f+///vb/b//P//4/93///9//3///y7//p/+f///yb9///pv/0///S/4P+f//SAB/8v///v///v/v+//e8AAvf5vXvf9//2/v/vf3////v///v//2/3//k/9f1//8f8v/////+Xf3//v/6/4f3///v/82/3/v///8313////pvy/7wAf////+//9v////+///gACe/m9+9/////9//+39f///v///+7//f2/y/+/f2///3///9/////2/N///vf/n/m/P/////3/1/b/b///3f3+v///831/ugB//6///7////v///9vwAHy433ve////2//3+7/////+v+//7///v2//y++//////+r/////+X///L////3/////+3///y/9v////1///f////oAf1//v///3/+/+f/+8AD//m93ve/////7//1///9+X/////+X+vv+vv//////f//////3/0//8///v7/3/////9////+//////X//93/+X//+gB/m////X/+f3/m//6AAnf33vvv/////vf3//7/93///v//f+/L/++//f//////f/+/v///9/+Xf/0//3////+v/////m/////3/f/f/k//3f6AH+3//v9//1/b/pv//gAC9+9fve3///+/v///++////+///2/l993+3/3///3/++f/+///29/0///99+///r///3///f///+n/v///z3/3/SAD//+v+X/X/+T//m/f0AAne81++/////m/+///v//////+38vvvf9/+////v+3/////y5t////ff1//////f//n///9///5/X///+m/+SABf13/+m////pv///3gANvf9///+73//9/////+///////t/L/f/3/////v//b/////v3m/++339////+///9f/9/3///2/+7///+X/+SAAf/+m/8f/+7/v//3/AA/u+9v//2///8//////+/+7///2+X5vf9///3////v/f////83m+/3ff1f///+7/11//9////5f3//f/+X//SAD///p3/5v9N////v8AAvfffff+/v////m//////+v//+vfNf3/9f/+/////3/+///////13/+3/+//////5/f+/v////+X/23/b//SAA5/yff/T//f+v//3AAe//Xfff3////f//v//////2+//1/L9v+////+////f/v/7//29//fvv3///1//3//9//////n///v///SAAd9/6ff/Jvv3//93AAa/X////7///9v+//////f///3+a39//f3///f////8vf/9/f///7fvv/3///vf/+v/3////0//23//6QAEP9Nf33//k//yAAL//X////4///m//////f+//y9f7+//9/////f/v/v/3373////v5v/+//////2/+f/1///N3/pv/SAAXm////+rfm3/+X4AA2v/////+3//+//////m///X9f6//f////v////7////v/////m///1////9f7//f/+Xf+m/6QAdf/3/+n+b1///SAA//ff//v/3///+3/33+///9f9393/9/f3//f////v/7+3////m/+///3f3/+/////k//N3/4Af+////pv6f/+v4AA/fvv7f3/9v///9/++v1////v9f0/++/+/f3/////f////v//vf+/f////y///f9///13/pv/4AG/+///033/+X/AA4f/2////9///vf/+331v///+3X2+/99//v+//+/////X////vX/vf/+7/m///y9//f0/eAH3/+f//k/f/5f8AD4ff///f//3////+/9df7////1X9/0//v++////+37//////v179///2/+3////y733/SAAP7/+7/+v/1v94AD4////33//v/+///+2/X/9f///91e9//v+///9/233////+v2vvvf31//23////k//SABf47f2/4//138AD1//f////3/+v//v//v9//f/+v/tf3f//vv//+///+//////fL///39////v03/0/SAA16f/X/jf/pvy/AAvX/+3///9//3///v/9fvv/+r73f/u/+333////+7////3///N////vv/0/+0AHf38v/J/+Xf4AG//ff+//f//+3//9/ff3/X//v6+//fv199/33/f/f/v////93/9/////N33/+T/0gA5d/39N/+7/y/AA19//3//v/f3///++//v+v9vv+fXv+//+//33//f//v//v3////+v////pv/9fSAA8/+v/L3/vvy3AAN1//t///f/7f//v///7+Xf3//+//7//2/vf////v//9/////9f///8u9P/SAANfv////x//lvYAC//1//ff//7/v///9/v//13///0//vv33/////f7///u//f////k//7/SAA7/2/f13///3+AAu//3+3//9//v///+ffv1f///9/++99//////f2+//37////1f/X/SABu/n9//3/k//5f4AA5/2/2///3/+3///3+/13fX//+//v+//3///////2///X/+v+3/oAd/+9vf///k////AALf3++/3+//f///9/9ffdf/93//vv33//////+///7X/83/X0AAu++/+v/+T/+v23AAPP//399////+3///7//d333//9///f///2+/+9/f+//2/ff6AA1fff/+n+/4/+f+vAAevf//vf3/3///v///+/X3/39f///v+/332/f3/7///7ff9AALv33+/2/p///19f2AAW////ff9f////v/+//vf//3v/+3///vv////vfff9//r2AAMfv/ff+X/+///X+AAAe77///f9v/f//9/+7/9d///ff/e3///f////93f/SAAxfu//pv5v/+////f8AA+vf/+//vvff/v/f///X3////39e+////vvvv/f/8/+gAJv33038m///f///y/AA/f3f9f3///v/+3///X+3////7+9/f7f/2//X2+AAM+/76/pv0/k////0gAL++////f9f3/f/+3/ff++v/f//v//37///X/4fSAA039f9///S/+X/94ACz33//X1////v/2///r++/ff3////9//2///g+/AANX/ff0/v39////f4AAf+v7/9/////+3///9////v/vv//7////+S/0gAR+/pv////y//////f+AAH6/X7///+//f/+3//++//3v///vv///0v/SABrfuv+m////3/9+///94ADe//fffffvv/f/+/+v91ff/f3f33///2/k/0gAVffpv/k/+23//////f/eAAm/vvf3////vv//277/X3f9///f3//82+0ABbf9/+X/3///pv//+X///4AC/33//f///3+v/73/v//f/9//9///934ABqvv/m////3//1v//7//v/34AA///1+//f///f/++/331/X3//2////3f2gALr//vf1////2/p////f4f4AAx/+v1///+//9/f3//f/fff9f////4//SAAM/+///x/v/+f////f3f/+8AC///3f3f////+7/+vfff/////v/k/0gAff////4////v//3/NfX/+8AD//93/vf9////3v//d////u/9IAD77+v///v+73///////X//4AA1////f/////f/++/+////f//p/0gAY//73v/x//+/4////X/7/2/AA/f//3/+3/v//9/+7/0AAp/X///3/+X1//////v/31////AAf/+v+vv///3+vff//v/t/SABD///m/+7////f/X///////f//vAA//+/vv///9f/+//v/+/6AAY39/////9f///3f////72v///0gA3/fff+//X/vvf//////3////8v4AB//9vf/////3+//v++//SAAw/e/f/+3/+////////3/73/pAAt+/1/9/3/9fffff/3///////9v/SAA7f3f/////7////vv///kAHdff3/7/+m//9f/+////SAAxm////0////+v////f////+/p/pABn+/39v/+3//+/r//4AC23/9////9///1/+0AG9f/6f/3/1//7/SAA+5/vv3/+v7//f/+0ACa//9f/+7//X//4AD133/u+m+2///pAAv0//////+3+/m/7wAbv2///5///u//m/SADa7////+//7///wAN9////+X/+3/k3p/kABt9////////y///f4AC2vf+//vv3///1//pAA///5////+3//k9IADr////m///v7/+SAAt3/v1///+//m/+S/4AD////4/////0/0gAnb/9///+f/v///+8ADu39f//9v//f/3/+0AE////f///+//SAAr9//v//m/////+gAHa7e////9///93v4AD0m+/X//+//t3//m/0gAf8vf///f/+T//SABvf//S///S/2/+///4AC3X/+f/2/+/////+gAPf3////1//9IAG5vv3/+X/+S+SAAq+3f//u/+/////6AAV9v/6////p/SAD5//////1///9P0gA/9e7////pvvf///+AAA3/////u/////+0AEbf/X3//9////pAAf39////f+////4ACfX//2/7//e/+gAS2////29f3//9IAIn/X////1//m/+kAD4m/+vf2/+n9IAOp+/9///X///4AE7m39/9//9IAGn/3f///1/+SAD61/0////v/9IAOb3///2/7f1//////8ACm79//7//e0AB3r9////v/4AEP///9f/+/SAB1///f///+///+0ACa//f3//9IAD1++f///9IAOp///1/+kAG4//vv3/+SAAe////0///SAAM3///2/+SAAR/f9/9/m/+kAF///7//SAAH7///3/+gAYv/////+kAGa/9?=";
 
   const introSound = new Audio(INTRO_AUDIO_SRC);
   introSound.volume = 0.5;
@@ -98,28 +103,38 @@
   let last_flash = 0;
   let active_color = -1;
   let scare_start = 0;
+
   const FLASH_DURATION = 850;
   const PAUSE_DURATION = 300;
   const scare_duration = 3500;
 
   function playTone(freq, duration = 0.22, volume = 0.5) {
     if (!audioCtx) return;
+
     try {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
+
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
       gain.gain.setValueAtTime(0, audioCtx.currentTime);
-      gain.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      gain.gain.linearRampToValueAtTime(
+        volume,
+        audioCtx.currentTime + 0.02
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + duration
+      );
 
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
       osc.start();
       osc.stop(audioCtx.currentTime + duration);
-    } catch(e) {}
+    } catch (e) {}
   }
 
   const FREQS = [261.63, 329.63, 392.00, 523.25];
@@ -128,77 +143,8 @@
     playTone(FREQS[index]);
   }
 
-  let jumpscareOsc = null;
-  let jumpscareGain = null;
-
-  function startJumpscareSound() {
-    if (!audioCtx) return;
-    try {
-      const now = audioCtx.currentTime;
-
-      // Master Volume Gain (Boosted to Max Output)
-      jumpscareGain = audioCtx.createGain();
-      jumpscareGain.gain.setValueAtTime(3.5, now); // Overdriven gain boost
-
-      // Distortion Curve for maximum harshness/loudness
-      const distortion = audioCtx.createWaveShaper();
-      const samples = 44100;
-      const curve = new Float32Array(samples);
-      const deg = Math.PI / 180;
-      for (let i = 0; i < samples; ++i) {
-        let x = (i * 2) / samples - 1;
-        curve[i] = ((3 + 50) * x * 20 * deg) / (Math.PI + 50 * Math.abs(x));
-      }
-      distortion.curve = curve;
-      distortion.oversample = '4x';
-
-      // 1. High-frequency Sawtooth Screech Oscillator
-      const osc1 = audioCtx.createOscillator();
-      osc1.type = 'sawtooth';
-      osc1.frequency.setValueAtTime(2800, now);
-      osc1.frequency.exponentialRampToValueAtTime(1200, now + 3.5);
-
-      // 2. Piercing Square Wave Oscillator
-      const osc2 = audioCtx.createOscillator();
-      osc2.type = 'square';
-      osc2.frequency.setValueAtTime(3500, now);
-      osc2.frequency.exponentialRampToValueAtTime(1800, now + 3.5);
-
-      // 3. Harsh White Noise Layer
-      const bufferSize = audioCtx.sampleRate * 3.5;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const output = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
-
-      // Connect all sound generators through distortion to destination
-      osc1.connect(distortion);
-      osc2.connect(distortion);
-      noise.connect(distortion);
-
-      distortion.connect(jumpscareGain);
-      jumpscareGain.connect(audioCtx.destination);
-
-      osc1.start(now);
-      osc2.start(now);
-      noise.start(now);
-
-      jumpscareOsc = { osc1, osc2, noise };
-    } catch(e) {}
-  }
-
   function stopJumpscareSound() {
-    if (jumpscareOsc) {
-      try {
-        jumpscareOsc.osc1.stop();
-        jumpscareOsc.osc2.stop();
-        jumpscareOsc.noise.stop();
-      } catch(e) {}
-      jumpscareOsc = null;
-    }
+    // Generated jumpscare scream removed.
   }
 
   function drawText(text, font, color, x, y) {
@@ -209,7 +155,16 @@
     ctx.fillText(text, x, y);
   }
 
-  function drawRoundRect(x, y, w, h, radius, fillStyle, strokeStyle, strokeWidth) {
+  function drawRoundRect(
+    x,
+    y,
+    w,
+    h,
+    radius,
+    fillStyle,
+    strokeStyle,
+    strokeWidth
+  ) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.arcTo(x + w, y, x + w, y + h, radius);
@@ -217,8 +172,10 @@
     ctx.arcTo(x, y + h, x, y, radius);
     ctx.arcTo(x, y, x + w, y, radius);
     ctx.closePath();
+
     ctx.fillStyle = fillStyle;
     ctx.fill();
+
     if (strokeStyle) {
       ctx.lineWidth = strokeWidth;
       ctx.strokeStyle = strokeStyle;
@@ -229,10 +186,35 @@
   function drawButtons(active = -1) {
     buttons.forEach((rect, i) => {
       if (i === active) {
-        drawRoundRect(rect.x, rect.y, rect.w, rect.h, 25, BRIGHT[i], WHITE, 8);
-        drawText(NAMES[i], "bold 38px Arial", WHITE, rect.x + rect.w / 2, rect.y + rect.h / 2);
+        drawRoundRect(
+          rect.x,
+          rect.y,
+          rect.w,
+          rect.h,
+          25,
+          BRIGHT[i],
+          WHITE,
+          8
+        );
+
+        drawText(
+          NAMES[i],
+          "bold 38px Arial",
+          WHITE,
+          rect.x + rect.w / 2,
+          rect.y + rect.h / 2
+        );
       } else {
-        drawRoundRect(rect.x, rect.y, rect.w, rect.h, 25, DARK[i], null, 0);
+        drawRoundRect(
+          rect.x,
+          rect.y,
+          rect.w,
+          rect.h,
+          25,
+          DARK[i],
+          null,
+          0
+        );
       }
     });
   }
@@ -248,27 +230,69 @@
     const cy = canvas.height / 2 + shakeY;
 
     ctx.fillStyle = "rgb(225, 220, 205)";
+
     ctx.beginPath();
-    ctx.ellipse(cx, cy, 320, 300, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      cx,
+      cy,
+      320,
+      300,
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
 
     ctx.fillStyle = BLACK;
+
     ctx.beginPath();
-    ctx.ellipse(cx - 145, cy - 35, 65, 95, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      cx - 145,
+      cy - 35,
+      65,
+      95,
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
+
     ctx.beginPath();
-    ctx.ellipse(cx + 145, cy - 35, 65, 95, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      cx + 145,
+      cy - 35,
+      65,
+      95,
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
 
     ctx.fillStyle = WHITE;
+
     ctx.beginPath();
-    ctx.arc(cx - 145, cy - 40, 32, 0, Math.PI * 2);
+    ctx.arc(
+      cx - 145,
+      cy - 40,
+      32,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
+
     ctx.beginPath();
-    ctx.arc(cx + 145, cy - 40, 32, 0, Math.PI * 2);
+    ctx.arc(
+      cx + 145,
+      cy - 40,
+      32,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
 
     ctx.fillStyle = "rgb(25, 25, 25)";
+
     ctx.beginPath();
     ctx.moveTo(cx, cy - 30);
     ctx.lineTo(cx - 45, cy + 80);
@@ -277,11 +301,21 @@
     ctx.fill();
 
     ctx.fillStyle = BLACK;
+
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 185, 190, 85, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      cx,
+      cy + 185,
+      190,
+      85,
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
 
     ctx.fillStyle = WHITE;
+
     for (let x = cx - 160; x < cx + 160; x += 30) {
       ctx.beginPath();
       ctx.moveTo(x, cy + 110);
@@ -292,14 +326,25 @@
     }
 
     if (Math.random() < 0.45) {
-      ctx.fillStyle = `rgba(255, 0, 0, ${(Math.random() * 100 + 50) / 255})`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle =
+        `rgba(255, 0, 0, ${(Math.random() * 100 + 50) / 255})`;
+
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
     }
   }
 
   function newTurn() {
     turn++;
-    sequence.push(Math.floor(Math.random() * 4));
+
+    sequence.push(
+      Math.floor(Math.random() * 4)
+    );
+
     player_index = 0;
     show_index = 0;
     last_flash = Date.now();
@@ -314,90 +359,141 @@
     turn = 0;
     score = 0;
     active_color = -1;
+
     newTurn();
   }
 
   function startJumpscare() {
     state = "scare";
     scare_start = Date.now();
+
     introSound.pause();
     introSound.currentTime = 0;
-    startJumpscareSound();
+
+    // No scream is played here.
   }
 
   function handleInput(x, y) {
     initAudio();
 
     if (state === "audio_check") {
-      if (x >= testBtn.x && x <= testBtn.x + testBtn.w && y >= testBtn.y && y <= testBtn.y + testBtn.h) {
+
+      if (
+        x >= testBtn.x &&
+        x <= testBtn.x + testBtn.w &&
+        y >= testBtn.y &&
+        y <= testBtn.y + testBtn.h
+      ) {
         playTone(440, 0.4, 0.6);
         audioTested = true;
         audioWarning = false;
       }
-      else if (audioTested && x >= yesBtn.x && x <= yesBtn.x + yesBtn.w && y >= yesBtn.y && y <= yesBtn.y + yesBtn.h) {
+
+      else if (
+        audioTested &&
+        x >= yesBtn.x &&
+        x <= yesBtn.x + yesBtn.w &&
+        y >= yesBtn.y &&
+        y <= yesBtn.y + yesBtn.h
+      ) {
         introSound.play().catch(() => {});
         state = "menu";
       }
-      else if (audioTested && x >= noBtn.x && x <= noBtn.x + noBtn.w && y >= noBtn.y && y <= noBtn.y + noBtn.h) {
+
+      else if (
+        audioTested &&
+        x >= noBtn.x &&
+        x <= noBtn.x + noBtn.w &&
+        y >= noBtn.y &&
+        y <= noBtn.y + noBtn.h
+      ) {
         audioWarning = true;
       }
+
     } else if (state === "menu") {
+
       startGame();
+
     } else if (state === "waiting") {
+
       if (turn >= 3) {
+
         startJumpscare();
+
       } else {
+
         let clicked = -1;
+
         buttons.forEach((rect, i) => {
-          if (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h) {
+          if (
+            x >= rect.x &&
+            x <= rect.x + rect.w &&
+            y >= rect.y &&
+            y <= rect.y + rect.h
+          ) {
             clicked = i;
           }
         });
 
         if (clicked !== -1) {
+
           playColorSound(clicked);
+
           if (clicked === sequence[player_index]) {
+
             player_index++;
             score += 10;
+
             if (player_index >= sequence.length) {
               state = "next";
+
               setTimeout(() => {
-                if (state === "next") newTurn();
+                if (state === "next") {
+                  newTurn();
+                }
               }, 350);
             }
+
           } else {
+
             state = "menu";
+
           }
         }
       }
     }
   }
 
- function getCanvasCoords(e) {
-  const rect = canvas.getBoundingClientRect();
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
 
-  const scale = Math.min(
-    rect.width / canvas.width,
-    rect.height / canvas.height
+    const touch = e.touches
+      ? e.touches[0]
+      : (e.changedTouches ? e.changedTouches[0] : e);
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (touch.clientX - rect.left) * scaleX,
+      y: (touch.clientY - rect.top) * scaleY
+    };
+  }
+
+  window.addEventListener(
+    "pointerdown",
+    (e) => {
+      e.preventDefault();
+
+      const coords = getCanvasCoords(e);
+
+      handleInput(
+        coords.x,
+        coords.y
+      );
+    },
+    { passive: false }
   );
-
-  const displayedWidth = canvas.width * scale;
-  const displayedHeight = canvas.height * scale;
-
-  const offsetX = (rect.width - displayedWidth) / 2;
-  const offsetY = (rect.height - displayedHeight) / 2;
-
-  return {
-    x: (e.clientX - rect.left - offsetX) / scale,
-    y: (e.clientY - rect.top - offsetY) / scale
-  };
-}
-
-  window.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    const coords = getCanvasCoords(e);
-    handleInput(coords.x, coords.y);
-  }, { passive: false });
 
   let playedToneForStep = false;
 
@@ -405,42 +501,174 @@
     const now = Date.now();
 
     if (state === "audio_check") {
+
       ctx.fillStyle = BLACK;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
 
-      drawText("AUDIO CHECK", "bold 52px Arial", WHITE, canvas.width / 2, 130);
-      drawText("This test requires sound to play properly.", "22px Arial", TEXT_MID, canvas.width / 2, 200);
+      drawText(
+        "AUDIO CHECK",
+        "bold 52px Arial",
+        WHITE,
+        canvas.width / 2,
+        130
+      );
 
-      drawRoundRect(testBtn.x, testBtn.y, testBtn.w, testBtn.h, 20, "#326ef0", WHITE, 3);
-      drawText("🔊 TAP TO TEST SOUND", "bold 30px Arial", WHITE, canvas.width / 2, testBtn.y + testBtn.h / 2);
+      drawText(
+        "This test requires sound to play properly.",
+        "22px Arial",
+        TEXT_MID,
+        canvas.width / 2,
+        200
+      );
+
+      drawRoundRect(
+        testBtn.x,
+        testBtn.y,
+        testBtn.w,
+        testBtn.h,
+        20,
+        "#326ef0",
+        WHITE,
+        3
+      );
+
+      drawText(
+        "🔊 TAP TO TEST SOUND",
+        "bold 30px Arial",
+        WHITE,
+        canvas.width / 2,
+        testBtn.y + testBtn.h / 2
+      );
 
       if (audioTested) {
-        drawText("Did you hear the beep?", "bold 28px Arial", WHITE, canvas.width / 2, 440);
 
-        drawRoundRect(yesBtn.x, yesBtn.y, yesBtn.w, yesBtn.h, 20, "#28d246", null, 0);
-        drawText("YES", "bold 32px Arial", WHITE, yesBtn.x + yesBtn.w / 2, yesBtn.y + yesBtn.h / 2);
+        drawText(
+          "Did you hear the beep?",
+          "bold 28px Arial",
+          WHITE,
+          canvas.width / 2,
+          440
+        );
 
-        drawRoundRect(noBtn.x, noBtn.y, noBtn.w, noBtn.h, 20, "#eb2828", null, 0);
-        drawText("NO", "bold 32px Arial", WHITE, noBtn.x + noBtn.w / 2, noBtn.y + noBtn.h / 2);
+        drawRoundRect(
+          yesBtn.x,
+          yesBtn.y,
+          yesBtn.w,
+          yesBtn.h,
+          20,
+          "#28d246",
+          null,
+          0
+        );
+
+        drawText(
+          "YES",
+          "bold 32px Arial",
+          WHITE,
+          yesBtn.x + yesBtn.w / 2,
+          yesBtn.y + yesBtn.h / 2
+        );
+
+        drawRoundRect(
+          noBtn.x,
+          noBtn.y,
+          noBtn.w,
+          noBtn.h,
+          20,
+          "#eb2828",
+          null,
+          0
+        );
+
+        drawText(
+          "NO",
+          "bold 32px Arial",
+          WHITE,
+          noBtn.x + noBtn.w / 2,
+          noBtn.y + noBtn.h / 2
+        );
       }
 
       if (audioWarning) {
-        drawText("Turn OFF Silent/Mute Mode on your phone & increase volume!", "bold 20px Arial", "#eb2828", canvas.width / 2, 630);
+        drawText(
+          "Turn OFF Silent/Mute Mode on your phone & increase volume!",
+          "bold 20px Arial",
+          "#eb2828",
+          canvas.width / 2,
+          630
+        );
       }
-    } else if (state === "menu") {
-      ctx.fillStyle = BLACK;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawText("IQ TEST", "bold 72px Arial", WHITE, canvas.width / 2, 170);
-      drawText("MEMORY & REACTION TEST", "bold 38px Arial", TEXT_MID, canvas.width / 2, 280);
-      drawText("TAP ANYWHERE TO BEGIN", "bold 38px Arial", WHITE, canvas.width / 2, 430);
-      drawText("FOLLOW THE COLOURS", "24px Arial", TEXT_DARK, canvas.width / 2, 500);
-    } else if (state === "showing") {
-      ctx.fillStyle = BLACK;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawText("WATCH CAREFULLY", "bold 38px Arial", WHITE, canvas.width / 2, 70);
 
-      const cycle = FLASH_DURATION + PAUSE_DURATION;
-      const elapsed = now - last_flash;
+    } else if (state === "menu") {
+
+      ctx.fillStyle = BLACK;
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      drawText(
+        "IQ TEST",
+        "bold 72px Arial",
+        WHITE,
+        canvas.width / 2,
+        170
+      );
+
+      drawText(
+        "MEMORY & REACTION TEST",
+        "bold 38px Arial",
+        TEXT_MID,
+        canvas.width / 2,
+        280
+      );
+
+      drawText(
+        "TAP ANYWHERE TO BEGIN",
+        "bold 38px Arial",
+        WHITE,
+        canvas.width / 2,
+        430
+      );
+
+      drawText(
+        "FOLLOW THE COLOURS",
+        "24px Arial",
+        TEXT_DARK,
+        canvas.width / 2,
+        500
+      );
+
+    } else if (state === "showing") {
+
+      ctx.fillStyle = BLACK;
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      drawText(
+        "WATCH CAREFULLY",
+        "bold 38px Arial",
+        WHITE,
+        canvas.width / 2,
+        70
+      );
+
+      const cycle =
+        FLASH_DURATION + PAUSE_DURATION;
+
+      const elapsed =
+        now - last_flash;
 
       if (elapsed >= cycle) {
         show_index++;
@@ -449,44 +677,104 @@
       }
 
       if (show_index < sequence.length) {
+
         if (elapsed < FLASH_DURATION) {
-          active_color = sequence[show_index];
+
+          active_color =
+            sequence[show_index];
+
           drawButtons(active_color);
 
-          if (elapsed < 100 && !playedToneForStep) {
+          if (
+            elapsed < 100 &&
+            !playedToneForStep
+          ) {
             playColorSound(active_color);
             playedToneForStep = true;
           }
+
         } else {
+
           drawButtons(-1);
+
         }
+
       } else {
+
         state = "waiting";
+
       }
+
     } else if (state === "waiting") {
+
       ctx.fillStyle = BLACK;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawText("YOUR TURN", "bold 38px Arial", WHITE, canvas.width / 2, 70);
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      drawText(
+        "YOUR TURN",
+        "bold 38px Arial",
+        WHITE,
+        canvas.width / 2,
+        70
+      );
+
       drawButtons(-1);
 
       ctx.font = "24px Arial";
       ctx.fillStyle = "#8c8c8c";
       ctx.textAlign = "left";
-      ctx.fillText(`ROUND ${turn}`, 100, 30);
+
+      ctx.fillText(
+        `ROUND ${turn}`,
+        100,
+        30
+      );
+
       ctx.textAlign = "right";
-      ctx.fillText(`SCORE: ${score}`, 900, 30);
+
+      ctx.fillText(
+        `SCORE: ${score}`,
+        900,
+        30
+      );
+
     } else if (state === "next") {
+
       ctx.fillStyle = BLACK;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawText("CORRECT", "bold 72px Arial", WHITE, canvas.width / 2, canvas.height / 2);
+      ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      drawText(
+        "CORRECT",
+        "bold 72px Arial",
+        WHITE,
+        canvas.width / 2,
+        canvas.height / 2
+      );
+
     } else if (state === "scare") {
+
       if (now - scare_start < scare_duration) {
+
         drawFace();
+
       } else {
+
         stopJumpscareSound();
+
         state = "audio_check";
         audioTested = false;
         audioWarning = false;
+
         introSound.volume = 1.0;
         introSound.currentTime = 0;
       }
@@ -497,5 +785,6 @@
 
   loop();
 </script>
+
 </body>
 </html>
