@@ -1,159 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>IQ TEST</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050508;
+  color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game-container">
+  <canvas id="gameCanvas" width="1000" height="700"></canvas>
+</div>
+
+<script>
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let audioCtx = null;
+
+let state = "audio_check";
+let audioTested = false;
+let audioWarning = false;
+
+let sequence = [];
+let playerIndex = 0;
+let showIndex = 0;
+let turn = 0;
+let score = 0;
+
+let lastFlash = 0;
+let activeColor = -1;
+let playedToneForStep = false;
+
+let scareStart = 0;
+
+const FLASH_DURATION = 850;
+const PAUSE_DURATION = 300;
+const SCARE_DURATION = 3500;
+
+const BLACK = "#050508";
+const WHITE = "#f5f5f5";
+const TEXT_DARK = "#505050";
+const TEXT_MID = "#969696";
+
+const BRIGHT = [
+  "#eb2828",
+  "#28d246",
+  "#326ef0",
+  "#f0c81e"
+];
+
+const DARK = [
+  "#460a0a",
+  "#0a4614",
+  "#0a1e50",
+  "#50410a"
+];
+
+const NAMES = [
+  "RED",
+  "GREEN",
+  "BLUE",
+  "YELLOW"
+];
+
+const FREQS = [
+  261.63,
+  329.63,
+  392.00,
+  523.25
+];
+
+const buttons = [
+  { x: 100, y: 250, w: 350, h: 170 },
+  { x: 550, y: 250, w: 350, h: 170 },
+  { x: 100, y: 450, w: 350, h: 170 },
+  { x: 550, y: 450, w: 350, h: 170 }
+];
+
+const testBtn = {
+  x: 250,
+  y: 320,
+  w: 500,
+  h: 100
+};
+
+const yesBtn = {
+  x: 220,
+  y: 480,
+  w: 260,
+  h: 90
+};
+
+const noBtn = {
+  x: 520,
+  y: 480,
+  w: 260,
+  h: 90
+};
+
+
+/* =========================
+   AUDIO
+========================= */
+
 async function initAudio() {
+
   try {
+
     if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
     }
 
     if (audioCtx.state !== "running") {
       await audioCtx.resume();
     }
-  } catch (e) {
-    console.error("Audio initialization failed:", e);
+
+    return audioCtx.state === "running";
+
+  } catch (error) {
+
+    console.error("Audio initialization failed:", error);
+
+    return false;
   }
 }
 
 
-let jumpscareOsc = null;
-let jumpscareGain = null;
+function playTone(
+  frequency,
+  duration = 0.22,
+  volume = 0.5
+) {
+
+  if (!audioCtx) return;
+
+  try {
+
+    const oscillator =
+      audioCtx.createOscillator();
+
+    const gain =
+      audioCtx.createGain();
+
+    const now =
+      audioCtx.currentTime;
+
+    oscillator.type = "sine";
+
+    oscillator.frequency.setValueAtTime(
+      frequency,
+      now
+    );
+
+    gain.gain.setValueAtTime(
+      0,
+      now
+    );
+
+    gain.gain.linearRampToValueAtTime(
+      volume,
+      now + 0.02
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      now + duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+function playColorSound(index) {
+  playTone(FREQS[index], 0.22, 0.45);
+}
+
+
+/* =========================
+   JUMPSCARE SOUND
+========================= */
+
+let jumpscareSources = [];
+let jumpscareMaster = null;
+
 
 async function startJumpscareSound() {
-  try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
 
-    if (audioCtx.state !== "running") {
-      await audioCtx.resume();
-    }
+  try {
+
+    await initAudio();
+
+    if (!audioCtx) return;
+
+    stopJumpscareSound();
 
     const now = audioCtx.currentTime;
 
-    // Master volume
-    jumpscareGain = audioCtx.createGain();
-    jumpscareGain.gain.setValueAtTime(1.0, now);
-    jumpscareGain.connect(audioCtx.destination);
+    jumpscareMaster =
+      audioCtx.createGain();
 
-    // Distortion
-    const distortion = audioCtx.createWaveShaper();
+    jumpscareMaster.gain.setValueAtTime(
+      0.9,
+      now
+    );
+
+    jumpscareMaster.connect(
+      audioCtx.destination
+    );
+
+
+    /*
+      DISTORTION
+    */
+
+    const distortion =
+      audioCtx.createWaveShaper();
+
     const samples = 44100;
-    const curve = new Float32Array(samples);
+
+    const curve =
+      new Float32Array(samples);
 
     for (let i = 0; i < samples; i++) {
-      const x = (i * 2) / samples - 1;
-      curve[i] = Math.tanh(x * 4);
+
+      const x =
+        (i * 2 / samples) - 1;
+
+      curve[i] =
+        Math.tanh(x * 5);
     }
 
     distortion.curve = curve;
     distortion.oversample = "4x";
 
-    // High-pitched scream
-    const osc1 = audioCtx.createOscillator();
-    osc1.type = "sawtooth";
-    osc1.frequency.setValueAtTime(2500, now);
-    osc1.frequency.exponentialRampToValueAtTime(700, now + 3.5);
 
-    // Second scream layer
-    const osc2 = audioCtx.createOscillator();
-    osc2.type = "square";
-    osc2.frequency.setValueAtTime(3200, now);
-    osc2.frequency.exponentialRampToValueAtTime(900, now + 3.5);
+    /*
+      LOW SCREAM
+    */
 
-    // Noise
-    const bufferSize = Math.floor(audioCtx.sampleRate * 3.5);
-    const buffer = audioCtx.createBuffer(
-      1,
-      bufferSize,
-      audioCtx.sampleRate
+    const scream1 =
+      audioCtx.createOscillator();
+
+    scream1.type = "sawtooth";
+
+    scream1.frequency.setValueAtTime(
+      1600,
+      now
     );
 
-    const data = buffer.getChannelData(0);
+    scream1.frequency.exponentialRampToValueAtTime(
+      500,
+      now + SCARE_DURATION / 1000
+    );
+
+
+    /*
+      HIGH SCREAM
+    */
+
+    const scream2 =
+      audioCtx.createOscillator();
+
+    scream2.type = "square";
+
+    scream2.frequency.setValueAtTime(
+      2600,
+      now
+    );
+
+    scream2.frequency.exponentialRampToValueAtTime(
+      900,
+      now + SCARE_DURATION / 1000
+    );
+
+
+    /*
+      SECOND HIGH LAYER
+    */
+
+    const scream3 =
+      audioCtx.createOscillator();
+
+    scream3.type = "sawtooth";
+
+    scream3.frequency.setValueAtTime(
+      3900,
+      now
+    );
+
+    scream3.frequency.exponentialRampToValueAtTime(
+      1200,
+      now + SCARE_DURATION / 1000
+    );
+
+
+    /*
+      NOISE
+    */
+
+    const bufferSize =
+      Math.floor(
+        audioCtx.sampleRate *
+        (SCARE_DURATION / 1000)
+      );
+
+    const buffer =
+      audioCtx.createBuffer(
+        1,
+        bufferSize,
+        audioCtx.sampleRate
+      );
+
+    const data =
+      buffer.getChannelData(0);
 
     for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
+
+      data[i] =
+        Math.random() * 2 - 1;
     }
 
-    const noise = audioCtx.createBufferSource();
+    const noise =
+      audioCtx.createBufferSource();
+
     noise.buffer = buffer;
 
-    // Individual volume controls
-    const osc1Gain = audioCtx.createGain();
-    const osc2Gain = audioCtx.createGain();
-    const noiseGain = audioCtx.createGain();
 
-    osc1Gain.gain.value = 0.35;
-    osc2Gain.gain.value = 0.25;
-    noiseGain.gain.value = 0.12;
+    /*
+      INDIVIDUAL VOLUMES
+    */
 
-    osc1.connect(osc1Gain);
-    osc2.connect(osc2Gain);
+    const gain1 =
+      audioCtx.createGain();
+
+    const gain2 =
+      audioCtx.createGain();
+
+    const gain3 =
+      audioCtx.createGain();
+
+    const noiseGain =
+      audioCtx.createGain();
+
+    gain1.gain.value = 0.40;
+    gain2.gain.value = 0.25;
+    gain3.gain.value = 0.18;
+    noiseGain.gain.value = 0.08;
+
+
+    /*
+      CONNECTIONS
+    */
+
+    scream1.connect(gain1);
+    scream2.connect(gain2);
+    scream3.connect(gain3);
     noise.connect(noiseGain);
 
-    osc1Gain.connect(distortion);
-    osc2Gain.connect(distortion);
+    gain1.connect(distortion);
+    gain2.connect(distortion);
+    gain3.connect(distortion);
     noiseGain.connect(distortion);
 
-    distortion.connect(jumpscareGain);
+    distortion.connect(
+      jumpscareMaster
+    );
 
-    osc1.start(now);
-    osc2.start(now);
+
+    /*
+      START
+    */
+
+    scream1.start(now);
+    scream2.start(now);
+    scream3.start(now);
     noise.start(now);
 
-    osc1.stop(now + 3.5);
-    osc2.stop(now + 3.5);
-    noise.stop(now + 3.5);
+    const end =
+      now + SCARE_DURATION / 1000;
 
-    jumpscareOsc = {
-      osc1,
-      osc2,
+    scream1.stop(end);
+    scream2.stop(end);
+    scream3.stop(end);
+    noise.stop(end);
+
+    jumpscareSources = [
+      scream1,
+      scream2,
+      scream3,
       noise
-    };
+    ];
 
-  } catch (e) {
-    console.error("Jumpscare audio failed:", e);
+  } catch (error) {
+
+    console.error(
+      "Jumpscare sound error:",
+      error
+    );
   }
 }
 
 
 function stopJumpscareSound() {
-  if (jumpscareOsc) {
+
+  for (
+    const source of jumpscareSources
+  ) {
+
     try {
-      jumpscareOsc.osc1.stop();
+      source.stop();
     } catch (e) {}
 
     try {
-      jumpscareOsc.osc2.stop();
+      source.disconnect();
     } catch (e) {}
-
-    try {
-      jumpscareOsc.noise.stop();
-    } catch (e) {}
-
-    jumpscareOsc = null;
   }
 
-  if (jumpscareGain) {
+  jumpscareSources = [];
+
+  if (jumpscareMaster) {
+
     try {
-      jumpscareGain.disconnect();
+      jumpscareMaster.disconnect();
     } catch (e) {}
 
-    jumpscareGain = null;
+    jumpscareMaster = null;
   }
 }
 
 
-async function startJumpscare() {
-  state = "scare";
-  scare_start = Date.now();
+/* =========================
+   DRAWING
+========================= */
 
-  introSound.pause();
-  introSound.currentTime = 0;
+function drawText(
+  text,
+  font,
+  color,
+  x,
+  y
+) {
+
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillText(
+    text,
+    x,
+    y
+  );
+}
+
+
+function drawRoundRect(
+  x,
+  y,
+  w,
+  h,
+  radius,
+  fillStyle,
+  strokeStyle,
+  strokeWidth
+) {
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x + radius,
+    y
+  );
+
+  ctx.arcTo(
+    x + w,
+    y,
+    x + w,
+    y + h,
+    radius
+  );
+
+  ctx.arcTo(
+    x + w,
+    y + h,
+    x,
+    y + h,
+    radius
+  );
+
+  ctx.arcTo(
+    x,
+    y + h,
+    x,
+    y,
+    radius
+  );
+
+  ctx.arcTo(
+    x,
+    y,
+    x + w,
+    y,
+    radius
+  );
+
+  ctx.closePath();
+
+  ctx.fillStyle =
+    fillStyle;
+
+  ctx.fill();
+
+  if (strokeStyle) {
+
+    ctx.lineWidth =
+      strokeWidth;
+
+    ctx.strokeStyle =
+      strokeStyle;
+
+    ctx.stroke();
+  }
+}
+
+
+function drawButtons(active = -1) {
+
+  buttons.forEach(
+    (rect, i) => {
+
+      if (i === active) {
+
+        drawRoundRect(
+          rect.x,
+          rect.y,
+          rect.w,
+          rect.h,
+          25,
+          BRIGHT[i],
+          WHITE,
+          8
+        );
+
+        drawText(
+          NAMES[i],
+          "bold 38px Arial",
+          WHITE,
+          rect.x + rect.w / 2,
+          rect.y + rect.h / 2
+        );
+
+      } else {
+
+        drawRoundRect(
+          rect.x,
+          rect.y,
+          rect.w,
+          rect.h,
+          25,
+          DARK[i],
+          null,
+          0
+        );
+      }
+    }
+  );
+}
+
+
+/* =========================
+   JUMPSCARE FACE
+========================= */
+
+function drawFace() {
+
+  ctx.fillStyle =
+    BLACK;
+
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  const shakeX =
+    Math.floor(
+      Math.random() * 71
+    ) - 35;
+
+  const shakeY =
+    Math.floor(
+      Math.random() * 71
+    ) - 35;
+
+
+  const cx =
+    canvas.width / 2 +
+    shakeX;
+
+  const cy =
+    canvas.height / 2 +
+    shakeY;
+
+
+  /*
+    FACE
+  */
+
+  ctx.fillStyle =
+    "rgb(225,220,205)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx,
+    cy,
+    320,
+    300,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    EYES
+  */
+
+  ctx.fillStyle =
+    BLACK;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx - 145,
+    cy - 35,
+    65,
+    95,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx + 145,
+    cy - 35,
+    65,
+    95,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    EYE WHITES
+  */
+
+  ctx.fillStyle =
+    WHITE;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    cx - 145,
+    cy - 40,
+    32,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    cx + 145,
+    cy - 40,
+    32,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    NOSE
+  */
+
+  ctx.fillStyle =
+    "rgb(25,25,25)";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx,
+    cy - 30
+  );
+
+  ctx.lineTo(
+    cx - 45,
+    cy + 80
+  );
+
+  ctx.lineTo(
+    cx + 45,
+    cy + 80
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  /*
+    MOUTH
+  */
+
+  ctx.fillStyle =
+    BLACK;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx,
+    cy + 185,
+    190,
+    85,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    TEETH
+  */
+
+  ctx.fillStyle =
+    WHITE;
+
+  for (
+    let x = cx - 160;
+    x < cx + 160;
+    x += 30
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x,
+      cy + 110
+    );
+
+    ctx.lineTo(
+      x + 18,
+      cy + 110
+    );
+
+    ctx.lineTo(
+      x + 9,
+      cy + 160
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+  }
+
+
+  /*
+    RED FLASH
+  */
+
+  if (Math.random() < 0.45) {
+
+    ctx.fillStyle =
+      `rgba(255,0,0,${
+        (Math.random() * 100 + 50) / 255
+      })`;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+  }
+}
+
+
+/* =========================
+   GAME
+========================= */
+
+function newTurn() {
+
+  turn++;
+
+  sequence.push(
+    Math.floor(
+      Math.random() * 4
+    )
+  );
+
+  playerIndex = 0;
+  showIndex = 0;
+
+  lastFlash =
+    Date.now();
+
+  activeColor = -1;
+
+  playedToneForStep = false;
+
+  state = "showing";
+}
+
+
+function startGame() {
+
+  sequence = [];
+
+  playerIndex = 0;
+  showIndex = 0;
+
+  turn = 0;
+  score = 0;
+
+  activeColor = -1;
+
+  newTurn();
+}
+
+
+async function startJumpscare() {
+
+  state = "scare";
+
+  scareStart =
+    Date.now();
 
   await startJumpscareSound();
 }
 
 
+/* =========================
+   INPUT
+========================= */
+
+function getCanvasCoords(e) {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const scale =
+    Math.min(
+      rect.width / canvas.width,
+      rect.height / canvas.height
+    );
+
+  const displayedWidth =
+    canvas.width * scale;
+
+  const displayedHeight =
+    canvas.height * scale;
+
+  const offsetX =
+    (rect.width - displayedWidth) / 2;
+
+  const offsetY =
+    (rect.height - displayedHeight) / 2;
+
+  return {
+
+    x:
+      (e.clientX -
+       rect.left -
+       offsetX) / scale,
+
+    y:
+      (e.clientY -
+       rect.top -
+       offsetY) / scale
+  };
+}
+
+
 async function handleInput(x, y) {
+
   await initAudio();
+
+
+  /*
+    AUDIO CHECK
+  */
 
   if (state === "audio_check") {
 
@@ -163,77 +970,566 @@ async function handleInput(x, y) {
       y >= testBtn.y &&
       y <= testBtn.y + testBtn.h
     ) {
-      playTone(440, 0.4, 0.6);
+
+      playTone(
+        440,
+        0.4,
+        0.6
+      );
+
       audioTested = true;
       audioWarning = false;
+
+      return;
     }
 
-    else if (
+
+    if (
       audioTested &&
       x >= yesBtn.x &&
       x <= yesBtn.x + yesBtn.w &&
       y >= yesBtn.y &&
       y <= yesBtn.y + yesBtn.h
     ) {
-      introSound.play().catch(() => {});
+
       state = "menu";
+
+      return;
     }
 
-    else if (
+
+    if (
       audioTested &&
       x >= noBtn.x &&
       x <= noBtn.x + noBtn.w &&
       y >= noBtn.y &&
       y <= noBtn.y + noBtn.h
     ) {
-      audioWarning = true;
-    }
 
-  } else if (state === "menu") {
+      audioWarning = true;
+
+      return;
+    }
+  }
+
+
+  /*
+    MENU
+  */
+
+  else if (state === "menu") {
 
     startGame();
 
-  } else if (state === "waiting") {
+    return;
+  }
+
+
+  /*
+    PLAYER TURN
+  */
+
+  else if (state === "waiting") {
 
     if (turn >= 3) {
-      startJumpscare();
+
+      await startJumpscare();
+
       return;
     }
 
+
     let clicked = -1;
 
-    buttons.forEach((rect, i) => {
-      if (
-        x >= rect.x &&
-        x <= rect.x + rect.w &&
-        y >= rect.y &&
-        y <= rect.y + rect.h
-      ) {
-        clicked = i;
+    buttons.forEach(
+      (rect, i) => {
+
+        if (
+          x >= rect.x &&
+          x <= rect.x + rect.w &&
+          y >= rect.y &&
+          y <= rect.y + rect.h
+        ) {
+
+          clicked = i;
+        }
       }
-    });
+    );
 
-    if (clicked !== -1) {
-      playColorSound(clicked);
 
-      if (clicked === sequence[player_index]) {
+    if (clicked === -1) {
+      return;
+    }
 
-        player_index++;
-        score += 10;
 
-        if (player_index >= sequence.length) {
-          state = "next";
+    playColorSound(clicked);
 
-          setTimeout(() => {
-            if (state === "next") {
+
+    if (
+      clicked ===
+      sequence[playerIndex]
+    ) {
+
+      playerIndex++;
+
+      score += 10;
+
+
+      if (
+        playerIndex >=
+        sequence.length
+      ) {
+
+        state = "next";
+
+        setTimeout(
+          () => {
+
+            if (
+              state === "next"
+            ) {
+
               newTurn();
             }
-          }, 350);
-        }
 
-      } else {
-        state = "menu";
+          },
+          350
+        );
       }
+
+    } else {
+
+      state = "menu";
     }
   }
 }
+
+
+/* =========================
+   TOUCH / MOUSE
+========================= */
+
+window.addEventListener(
+  "pointerdown",
+  async (e) => {
+
+    e.preventDefault();
+
+    const coords =
+      getCanvasCoords(e);
+
+    await handleInput(
+      coords.x,
+      coords.y
+    );
+
+  },
+  {
+    passive: false
+  }
+);
+
+
+/* =========================
+   MAIN LOOP
+========================= */
+
+function loop() {
+
+  const now =
+    Date.now();
+
+
+  /*
+    AUDIO CHECK
+  */
+
+  if (state === "audio_check") {
+
+    ctx.fillStyle =
+      BLACK;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    drawText(
+      "AUDIO CHECK",
+      "bold 52px Arial",
+      WHITE,
+      canvas.width / 2,
+      130
+    );
+
+
+    drawText(
+      "This test requires sound to play properly.",
+      "22px Arial",
+      TEXT_MID,
+      canvas.width / 2,
+      200
+    );
+
+
+    drawRoundRect(
+      testBtn.x,
+      testBtn.y,
+      testBtn.w,
+      testBtn.h,
+      20,
+      "#326ef0",
+      WHITE,
+      3
+    );
+
+
+    drawText(
+      "TAP TO TEST SOUND",
+      "bold 30px Arial",
+      WHITE,
+      canvas.width / 2,
+      testBtn.y + testBtn.h / 2
+    );
+
+
+    if (audioTested) {
+
+      drawText(
+        "Did you hear the beep?",
+        "bold 28px Arial",
+        WHITE,
+        canvas.width / 2,
+        440
+      );
+
+
+      drawRoundRect(
+        yesBtn.x,
+        yesBtn.y,
+        yesBtn.w,
+        yesBtn.h,
+        20,
+        "#28d246",
+        null,
+        0
+      );
+
+
+      drawText(
+        "YES",
+        "bold 32px Arial",
+        WHITE,
+        yesBtn.x + yesBtn.w / 2,
+        yesBtn.y + yesBtn.h / 2
+      );
+
+
+      drawRoundRect(
+        noBtn.x,
+        noBtn.y,
+        noBtn.w,
+        noBtn.h,
+        20,
+        "#eb2828",
+        null,
+        0
+      );
+
+
+      drawText(
+        "NO",
+        "bold 32px Arial",
+        WHITE,
+        noBtn.x + noBtn.w / 2,
+        noBtn.y + noBtn.h / 2
+      );
+    }
+
+
+    if (audioWarning) {
+
+      drawText(
+        "Turn OFF Silent/Mute Mode and increase volume!",
+        "bold 20px Arial",
+        "#eb2828",
+        canvas.width / 2,
+        630
+      );
+    }
+  }
+
+
+  /*
+    MENU
+  */
+
+  else if (state === "menu") {
+
+    ctx.fillStyle =
+      BLACK;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    drawText(
+      "IQ TEST",
+      "bold 72px Arial",
+      WHITE,
+      canvas.width / 2,
+      170
+    );
+
+
+    drawText(
+      "MEMORY & REACTION TEST",
+      "bold 38px Arial",
+      TEXT_MID,
+      canvas.width / 2,
+      280
+    );
+
+
+    drawText(
+      "TAP ANYWHERE TO BEGIN",
+      "bold 38px Arial",
+      WHITE,
+      canvas.width / 2,
+      430
+    );
+
+
+    drawText(
+      "FOLLOW THE COLOURS",
+      "24px Arial",
+      TEXT_DARK,
+      canvas.width / 2,
+      500
+    );
+  }
+
+
+  /*
+    SHOWING
+  */
+
+  else if (state === "showing") {
+
+    ctx.fillStyle =
+      BLACK;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    drawText(
+      "WATCH CAREFULLY",
+      "bold 38px Arial",
+      WHITE,
+      canvas.width / 2,
+      70
+    );
+
+
+    const cycle =
+      FLASH_DURATION +
+      PAUSE_DURATION;
+
+    const elapsed =
+      now - lastFlash;
+
+
+    if (elapsed >= cycle) {
+
+      showIndex++;
+
+      lastFlash =
+        now;
+
+      playedToneForStep =
+        false;
+    }
+
+
+    if (
+      showIndex <
+      sequence.length
+    ) {
+
+      if (
+        elapsed <
+        FLASH_DURATION
+      ) {
+
+        activeColor =
+          sequence[showIndex];
+
+        drawButtons(
+          activeColor
+        );
+
+
+        if (
+          elapsed < 100 &&
+          !playedToneForStep
+        ) {
+
+          playColorSound(
+            activeColor
+          );
+
+          playedToneForStep =
+            true;
+        }
+
+      } else {
+
+        drawButtons(-1);
+      }
+
+    } else {
+
+      state =
+        "waiting";
+    }
+  }
+
+
+  /*
+    WAITING
+  */
+
+  else if (state === "waiting") {
+
+    ctx.fillStyle =
+      BLACK;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    drawText(
+      "YOUR TURN",
+      "bold 38px Arial",
+      WHITE,
+      canvas.width / 2,
+      70
+    );
+
+
+    drawButtons(-1);
+
+
+    ctx.font =
+      "24px Arial";
+
+    ctx.fillStyle =
+      "#8c8c8c";
+
+    ctx.textAlign =
+      "left";
+
+    ctx.fillText(
+      `ROUND ${turn}`,
+      100,
+      30
+    );
+
+
+    ctx.textAlign =
+      "right";
+
+    ctx.fillText(
+      `SCORE: ${score}`,
+      900,
+      30
+    );
+  }
+
+
+  /*
+    CORRECT
+  */
+
+  else if (state === "next") {
+
+    ctx.fillStyle =
+      BLACK;
+
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    drawText(
+      "CORRECT",
+      "bold 72px Arial",
+      WHITE,
+      canvas.width / 2,
+      canvas.height / 2
+    );
+  }
+
+
+  /*
+    JUMPSCARE
+  */
+
+  else if (state === "scare") {
+
+    const elapsed =
+      now - scareStart;
+
+
+    if (
+      elapsed <
+      SCARE_DURATION
+    ) {
+
+      drawFace();
+
+    } else {
+
+      stopJumpscareSound();
+
+      state =
+        "audio_check";
+
+      audioTested =
+        false;
+
+      audioWarning =
+        false;
+    }
+  }
+
+
+  requestAnimationFrame(loop);
+}
+
+
+loop();
+
+</script>
+
+</body>
+</html>
