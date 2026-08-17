@@ -144,9 +144,7 @@ const noBtn = {
 ========================= */
 
 async function initAudio() {
-
   try {
-
     if (!audioCtx) {
       audioCtx = new (
         window.AudioContext ||
@@ -159,11 +157,8 @@ async function initAudio() {
     }
 
     return audioCtx.state === "running";
-
   } catch (error) {
-
     console.error("Audio initialization failed:", error);
-
     return false;
   }
 }
@@ -174,48 +169,25 @@ function playTone(
   duration = 0.22,
   volume = 0.5
 ) {
-
   if (!audioCtx) return;
 
   try {
-
-    const oscillator =
-      audioCtx.createOscillator();
-
-    const gain =
-      audioCtx.createGain();
-
-    const now =
-      audioCtx.currentTime;
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
 
     oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, now);
 
-    oscillator.frequency.setValueAtTime(
-      frequency,
-      now
-    );
-
-    gain.gain.setValueAtTime(
-      0,
-      now
-    );
-
-    gain.gain.linearRampToValueAtTime(
-      volume,
-      now + 0.02
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      now + duration
-    );
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(volume, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
     oscillator.connect(gain);
     gain.connect(audioCtx.destination);
 
     oscillator.start(now);
     oscillator.stop(now + duration);
-
   } catch (error) {
     console.error(error);
   }
@@ -235,174 +207,88 @@ let jumpscareSources = [];
 let jumpscareMaster = null;
 
 
-async function startJumpscareSound() {
-
+function startJumpscareSound() {
   try {
-
-    await initAudio();
-
     if (!audioCtx) return;
 
     stopJumpscareSound();
 
     const now = audioCtx.currentTime;
 
-    jumpscareMaster =
-      audioCtx.createGain();
+    jumpscareMaster = audioCtx.createGain();
+    jumpscareMaster.gain.setValueAtTime(0.9, now);
+    jumpscareMaster.connect(audioCtx.destination);
 
-    jumpscareMaster.gain.setValueAtTime(
-      0.9,
-      now
-    );
-
-    jumpscareMaster.connect(
-      audioCtx.destination
-    );
-
-
-    /*
-      DISTORTION
-    */
-
-    const distortion =
-      audioCtx.createWaveShaper();
-
+    /* DISTORTION */
+    const distortion = audioCtx.createWaveShaper();
     const samples = 44100;
-
-    const curve =
-      new Float32Array(samples);
+    const curve = new Float32Array(samples);
 
     for (let i = 0; i < samples; i++) {
-
-      const x =
-        (i * 2 / samples) - 1;
-
-      curve[i] =
-        Math.tanh(x * 5);
+      const x = (i * 2 / samples) - 1;
+      curve[i] = Math.tanh(x * 5);
     }
 
     distortion.curve = curve;
     distortion.oversample = "4x";
 
-
-    /*
-      LOW SCREAM
-    */
-
-    const scream1 =
-      audioCtx.createOscillator();
-
+    /* LOW SCREAM */
+    const scream1 = audioCtx.createOscillator();
     scream1.type = "sawtooth";
-
-    scream1.frequency.setValueAtTime(
-      1600,
-      now
-    );
-
+    scream1.frequency.setValueAtTime(1600, now);
     scream1.frequency.exponentialRampToValueAtTime(
       500,
       now + SCARE_DURATION / 1000
     );
 
-
-    /*
-      HIGH SCREAM
-    */
-
-    const scream2 =
-      audioCtx.createOscillator();
-
+    /* HIGH SCREAM */
+    const scream2 = audioCtx.createOscillator();
     scream2.type = "square";
-
-    scream2.frequency.setValueAtTime(
-      2600,
-      now
-    );
-
+    scream2.frequency.setValueAtTime(2600, now);
     scream2.frequency.exponentialRampToValueAtTime(
       900,
       now + SCARE_DURATION / 1000
     );
 
-
-    /*
-      SECOND HIGH LAYER
-    */
-
-    const scream3 =
-      audioCtx.createOscillator();
-
+    /* SECOND HIGH LAYER */
+    const scream3 = audioCtx.createOscillator();
     scream3.type = "sawtooth";
-
-    scream3.frequency.setValueAtTime(
-      3900,
-      now
-    );
-
+    scream3.frequency.setValueAtTime(3900, now);
     scream3.frequency.exponentialRampToValueAtTime(
       1200,
       now + SCARE_DURATION / 1000
     );
 
-
-    /*
-      NOISE
-    */
-
-    const bufferSize =
-      Math.floor(
-        audioCtx.sampleRate *
-        (SCARE_DURATION / 1000)
-      );
-
-    const buffer =
-      audioCtx.createBuffer(
-        1,
-        bufferSize,
-        audioCtx.sampleRate
-      );
-
-    const data =
-      buffer.getChannelData(0);
+    /* NOISE */
+    const bufferSize = Math.floor(
+      audioCtx.sampleRate * (SCARE_DURATION / 1000)
+    );
+    const buffer = audioCtx.createBuffer(
+      1,
+      bufferSize,
+      audioCtx.sampleRate
+    );
+    const data = buffer.getChannelData(0);
 
     for (let i = 0; i < bufferSize; i++) {
-
-      data[i] =
-        Math.random() * 2 - 1;
+      data[i] = Math.random() * 2 - 1;
     }
 
-    const noise =
-      audioCtx.createBufferSource();
-
+    const noise = audioCtx.createBufferSource();
     noise.buffer = buffer;
 
-
-    /*
-      INDIVIDUAL VOLUMES
-    */
-
-    const gain1 =
-      audioCtx.createGain();
-
-    const gain2 =
-      audioCtx.createGain();
-
-    const gain3 =
-      audioCtx.createGain();
-
-    const noiseGain =
-      audioCtx.createGain();
+    /* INDIVIDUAL VOLUMES */
+    const gain1 = audioCtx.createGain();
+    const gain2 = audioCtx.createGain();
+    const gain3 = audioCtx.createGain();
+    const noiseGain = audioCtx.createGain();
 
     gain1.gain.value = 0.40;
     gain2.gain.value = 0.25;
     gain3.gain.value = 0.18;
     noiseGain.gain.value = 0.08;
 
-
-    /*
-      CONNECTIONS
-    */
-
+    /* CONNECTIONS */
     scream1.connect(gain1);
     scream2.connect(gain2);
     scream3.connect(gain3);
@@ -413,22 +299,15 @@ async function startJumpscareSound() {
     gain3.connect(distortion);
     noiseGain.connect(distortion);
 
-    distortion.connect(
-      jumpscareMaster
-    );
+    distortion.connect(jumpscareMaster);
 
-
-    /*
-      START
-    */
-
+    /* START */
     scream1.start(now);
     scream2.start(now);
     scream3.start(now);
     noise.start(now);
 
-    const end =
-      now + SCARE_DURATION / 1000;
+    const end = now + SCARE_DURATION / 1000;
 
     scream1.stop(end);
     scream2.stop(end);
@@ -443,21 +322,13 @@ async function startJumpscareSound() {
     ];
 
   } catch (error) {
-
-    console.error(
-      "Jumpscare sound error:",
-      error
-    );
+    console.error("Jumpscare sound error:", error);
   }
 }
 
 
 function stopJumpscareSound() {
-
-  for (
-    const source of jumpscareSources
-  ) {
-
+  for (const source of jumpscareSources) {
     try {
       source.stop();
     } catch (e) {}
@@ -470,7 +341,6 @@ function stopJumpscareSound() {
   jumpscareSources = [];
 
   if (jumpscareMaster) {
-
     try {
       jumpscareMaster.disconnect();
     } catch (e) {}
@@ -484,138 +354,57 @@ function stopJumpscareSound() {
    DRAWING
 ========================= */
 
-function drawText(
-  text,
-  font,
-  color,
-  x,
-  y
-) {
-
+function drawText(text, font, color, x, y) {
   ctx.font = font;
   ctx.fillStyle = color;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-
-  ctx.fillText(
-    text,
-    x,
-    y
-  );
+  ctx.fillText(text, x, y);
 }
 
 
-function drawRoundRect(
-  x,
-  y,
-  w,
-  h,
-  radius,
-  fillStyle,
-  strokeStyle,
-  strokeWidth
-) {
-
+function drawRoundRect(x, y, w, h, radius, fillStyle, strokeStyle, strokeWidth) {
   ctx.beginPath();
-
-  ctx.moveTo(
-    x + radius,
-    y
-  );
-
-  ctx.arcTo(
-    x + w,
-    y,
-    x + w,
-    y + h,
-    radius
-  );
-
-  ctx.arcTo(
-    x + w,
-    y + h,
-    x,
-    y + h,
-    radius
-  );
-
-  ctx.arcTo(
-    x,
-    y + h,
-    x,
-    y,
-    radius
-  );
-
-  ctx.arcTo(
-    x,
-    y,
-    x + w,
-    y,
-    radius
-  );
-
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
   ctx.closePath();
 
-  ctx.fillStyle =
-    fillStyle;
-
+  ctx.fillStyle = fillStyle;
   ctx.fill();
 
   if (strokeStyle) {
-
-    ctx.lineWidth =
-      strokeWidth;
-
-    ctx.strokeStyle =
-      strokeStyle;
-
+    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = strokeStyle;
     ctx.stroke();
   }
 }
 
 
 function drawButtons(active = -1) {
+  buttons.forEach((rect, i) => {
+    if (i === active) {
+      drawRoundRect(
+        rect.x, rect.y, rect.w, rect.h,
+        25, BRIGHT[i], WHITE, 8
+      );
 
-  buttons.forEach(
-    (rect, i) => {
-
-      if (i === active) {
-
-        drawRoundRect(
-          rect.x,
-          rect.y,
-          rect.w,
-          rect.h,
-          25,
-          BRIGHT[i],
-          WHITE,
-          8
-        );
-
-        drawText(
-          NAMES[i],
-          "bold 38px Arial",
-          WHITE,
-          rect.x + rect.w / 2,
-          rect.y + rect.h / 2
-        );
-
-      } else {
-
-        drawRoundRect(
-          rect.x,
-          rect.y,
-          rect.w,
-          rect.h,
-          25,
-          DARK[i],
-          null,
-          0
-        );
-      }
+      drawText(
+        NAMES[i],
+        "bold 38px Arial",
+        WHITE,
+        rect.x + rect.w / 2,
+        rect.y + rect.h / 2
+      );
+    } else {
+      drawRoundRect(
+        rect.x, rect.y, rect.w, rect.h,
+        25, DARK[i], null, 0
+      );
     }
-  );
+  });
 }
 
 
@@ -624,234 +413,71 @@ function drawButtons(active = -1) {
 ========================= */
 
 function drawFace() {
+  ctx.fillStyle = BLACK;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle =
-    BLACK;
+  const shakeX = Math.floor(Math.random() * 71) - 35;
+  const shakeY = Math.floor(Math.random() * 71) - 35;
 
-  ctx.fillRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
+  const cx = canvas.width / 2 + shakeX;
+  const cy = canvas.height / 2 + shakeY;
 
-
-  const shakeX =
-    Math.floor(
-      Math.random() * 71
-    ) - 35;
-
-  const shakeY =
-    Math.floor(
-      Math.random() * 71
-    ) - 35;
-
-
-  const cx =
-    canvas.width / 2 +
-    shakeX;
-
-  const cy =
-    canvas.height / 2 +
-    shakeY;
-
-
-  /*
-    FACE
-  */
-
-  ctx.fillStyle =
-    "rgb(225,220,205)";
-
+  /* FACE */
+  ctx.fillStyle = "rgb(225,220,205)";
   ctx.beginPath();
-
-  ctx.ellipse(
-    cx,
-    cy,
-    320,
-    300,
-    0,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.ellipse(cx, cy, 320, 300, 0, 0, Math.PI * 2);
   ctx.fill();
 
-
-  /*
-    EYES
-  */
-
-  ctx.fillStyle =
-    BLACK;
-
+  /* EYES */
+  ctx.fillStyle = BLACK;
   ctx.beginPath();
-
-  ctx.ellipse(
-    cx - 145,
-    cy - 35,
-    65,
-    95,
-    0,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.ellipse(cx - 145, cy - 35, 65, 95, 0, 0, Math.PI * 2);
   ctx.fill();
 
-
   ctx.beginPath();
-
-  ctx.ellipse(
-    cx + 145,
-    cy - 35,
-    65,
-    95,
-    0,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.ellipse(cx + 145, cy - 35, 65, 95, 0, 0, Math.PI * 2);
   ctx.fill();
 
-
-  /*
-    EYE WHITES
-  */
-
-  ctx.fillStyle =
-    WHITE;
-
+  /* EYE WHITES */
+  ctx.fillStyle = WHITE;
   ctx.beginPath();
-
-  ctx.arc(
-    cx - 145,
-    cy - 40,
-    32,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.arc(cx - 145, cy - 40, 32, 0, Math.PI * 2);
   ctx.fill();
 
-
   ctx.beginPath();
-
-  ctx.arc(
-    cx + 145,
-    cy - 40,
-    32,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.arc(cx + 145, cy - 40, 32, 0, Math.PI * 2);
   ctx.fill();
 
-
-  /*
-    NOSE
-  */
-
-  ctx.fillStyle =
-    "rgb(25,25,25)";
-
+  /* NOSE */
+  ctx.fillStyle = "rgb(25,25,25)";
   ctx.beginPath();
-
-  ctx.moveTo(
-    cx,
-    cy - 30
-  );
-
-  ctx.lineTo(
-    cx - 45,
-    cy + 80
-  );
-
-  ctx.lineTo(
-    cx + 45,
-    cy + 80
-  );
-
+  ctx.moveTo(cx, cy - 30);
+  ctx.lineTo(cx - 45, cy + 80);
+  ctx.lineTo(cx + 45, cy + 80);
   ctx.closePath();
-
   ctx.fill();
 
-
-  /*
-    MOUTH
-  */
-
-  ctx.fillStyle =
-    BLACK;
-
+  /* MOUTH */
+  ctx.fillStyle = BLACK;
   ctx.beginPath();
-
-  ctx.ellipse(
-    cx,
-    cy + 185,
-    190,
-    85,
-    0,
-    0,
-    Math.PI * 2
-  );
-
+  ctx.ellipse(cx, cy + 185, 190, 85, 0, 0, Math.PI * 2);
   ctx.fill();
 
-
-  /*
-    TEETH
-  */
-
-  ctx.fillStyle =
-    WHITE;
-
-  for (
-    let x = cx - 160;
-    x < cx + 160;
-    x += 30
-  ) {
-
+  /* TEETH */
+  ctx.fillStyle = WHITE;
+  for (let x = cx - 160; x < cx + 160; x += 30) {
     ctx.beginPath();
-
-    ctx.moveTo(
-      x,
-      cy + 110
-    );
-
-    ctx.lineTo(
-      x + 18,
-      cy + 110
-    );
-
-    ctx.lineTo(
-      x + 9,
-      cy + 160
-    );
-
+    ctx.moveTo(x, cy + 110);
+    ctx.lineTo(x + 18, cy + 110);
+    ctx.lineTo(x + 9, cy + 160);
     ctx.closePath();
-
     ctx.fill();
   }
 
-
-  /*
-    RED FLASH
-  */
-
+  /* RED FLASH */
   if (Math.random() < 0.45) {
-
-    ctx.fillStyle =
-      `rgba(255,0,0,${
-        (Math.random() * 100 + 50) / 255
-      })`;
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    ctx.fillStyle = `rgba(255,0,0,${(Math.random() * 100 + 50) / 255})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 }
 
@@ -861,23 +487,13 @@ function drawFace() {
 ========================= */
 
 function newTurn() {
-
   turn++;
-
-  sequence.push(
-    Math.floor(
-      Math.random() * 4
-    )
-  );
+  sequence.push(Math.floor(Math.random() * 4));
 
   playerIndex = 0;
   showIndex = 0;
-
-  lastFlash =
-    Date.now();
-
+  lastFlash = Date.now();
   activeColor = -1;
-
   playedToneForStep = false;
 
   state = "showing";
@@ -885,29 +501,21 @@ function newTurn() {
 
 
 function startGame() {
-
   sequence = [];
-
   playerIndex = 0;
   showIndex = 0;
-
   turn = 0;
   score = 0;
-
   activeColor = -1;
 
   newTurn();
 }
 
 
-async function startJumpscare() {
-
+function startJumpscare() {
   state = "scare";
-
-  scareStart =
-    Date.now();
-
-  await startJumpscareSound();
+  scareStart = Date.now();
+  startJumpscareSound();
 }
 
 
@@ -916,73 +524,41 @@ async function startJumpscare() {
 ========================= */
 
 function getCanvasCoords(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scale = Math.min(
+    rect.width / canvas.width,
+    rect.height / canvas.height
+  );
 
-  const rect =
-    canvas.getBoundingClientRect();
+  const displayedWidth = canvas.width * scale;
+  const displayedHeight = canvas.height * scale;
 
-  const scale =
-    Math.min(
-      rect.width / canvas.width,
-      rect.height / canvas.height
-    );
-
-  const displayedWidth =
-    canvas.width * scale;
-
-  const displayedHeight =
-    canvas.height * scale;
-
-  const offsetX =
-    (rect.width - displayedWidth) / 2;
-
-  const offsetY =
-    (rect.height - displayedHeight) / 2;
+  const offsetX = (rect.width - displayedWidth) / 2;
+  const offsetY = (rect.height - displayedHeight) / 2;
 
   return {
-
-    x:
-      (e.clientX -
-       rect.left -
-       offsetX) / scale,
-
-    y:
-      (e.clientY -
-       rect.top -
-       offsetY) / scale
+    x: (e.clientX - rect.left - offsetX) / scale,
+    y: (e.clientY - rect.top - offsetY) / scale
   };
 }
 
 
 async function handleInput(x, y) {
-
   await initAudio();
 
-
-  /*
-    AUDIO CHECK
-  */
-
+  /* AUDIO CHECK */
   if (state === "audio_check") {
-
     if (
       x >= testBtn.x &&
       x <= testBtn.x + testBtn.w &&
       y >= testBtn.y &&
       y <= testBtn.y + testBtn.h
     ) {
-
-      playTone(
-        440,
-        0.4,
-        0.6
-      );
-
+      playTone(440, 0.4, 0.6);
       audioTested = true;
       audioWarning = false;
-
       return;
     }
-
 
     if (
       audioTested &&
@@ -991,12 +567,9 @@ async function handleInput(x, y) {
       y >= yesBtn.y &&
       y <= yesBtn.y + yesBtn.h
     ) {
-
       state = "menu";
-
       return;
     }
-
 
     if (
       audioTested &&
@@ -1005,100 +578,54 @@ async function handleInput(x, y) {
       y >= noBtn.y &&
       y <= noBtn.y + noBtn.h
     ) {
-
       audioWarning = true;
-
       return;
     }
   }
 
-
-  /*
-    MENU
-  */
-
+  /* MENU */
   else if (state === "menu") {
-
     startGame();
-
     return;
   }
 
-
-  /*
-    PLAYER TURN
-  */
-
+  /* PLAYER TURN */
   else if (state === "waiting") {
-
     if (turn >= 3) {
-
-      await startJumpscare();
-
+      startJumpscare();
       return;
     }
-
 
     let clicked = -1;
 
-    buttons.forEach(
-      (rect, i) => {
-
-        if (
-          x >= rect.x &&
-          x <= rect.x + rect.w &&
-          y >= rect.y &&
-          y <= rect.y + rect.h
-        ) {
-
-          clicked = i;
-        }
+    buttons.forEach((rect, i) => {
+      if (
+        x >= rect.x &&
+        x <= rect.x + rect.w &&
+        y >= rect.y &&
+        y <= rect.y + rect.h
+      ) {
+        clicked = i;
       }
-    );
+    });
 
-
-    if (clicked === -1) {
-      return;
-    }
-
+    if (clicked === -1) return;
 
     playColorSound(clicked);
 
-
-    if (
-      clicked ===
-      sequence[playerIndex]
-    ) {
-
+    if (clicked === sequence[playerIndex]) {
       playerIndex++;
-
       score += 10;
 
-
-      if (
-        playerIndex >=
-        sequence.length
-      ) {
-
+      if (playerIndex >= sequence.length) {
         state = "next";
-
-        setTimeout(
-          () => {
-
-            if (
-              state === "next"
-            ) {
-
-              newTurn();
-            }
-
-          },
-          350
-        );
+        setTimeout(() => {
+          if (state === "next") {
+            newTurn();
+          }
+        }, 350);
       }
-
     } else {
-
       state = "menu";
     }
   }
@@ -1112,21 +639,11 @@ async function handleInput(x, y) {
 window.addEventListener(
   "pointerdown",
   async (e) => {
-
     e.preventDefault();
-
-    const coords =
-      getCanvasCoords(e);
-
-    await handleInput(
-      coords.x,
-      coords.y
-    );
-
+    const coords = getCanvasCoords(e);
+    await handleInput(coords.x, coords.y);
   },
-  {
-    passive: false
-  }
+  { passive: false }
 );
 
 
@@ -1135,123 +652,34 @@ window.addEventListener(
 ========================= */
 
 function loop() {
+  const now = Date.now();
 
-  const now =
-    Date.now();
-
-
-  /*
-    AUDIO CHECK
-  */
-
+  /* AUDIO CHECK */
   if (state === "audio_check") {
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle =
-      BLACK;
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    drawText(
-      "AUDIO CHECK",
-      "bold 52px Arial",
-      WHITE,
-      canvas.width / 2,
-      130
-    );
-
-
-    drawText(
-      "This test requires sound to play properly.",
-      "22px Arial",
-      TEXT_MID,
-      canvas.width / 2,
-      200
-    );
-
+    drawText("AUDIO CHECK", "bold 52px Arial", WHITE, canvas.width / 2, 130);
+    drawText("This test requires sound to play properly.", "22px Arial", TEXT_MID, canvas.width / 2, 200);
 
     drawRoundRect(
-      testBtn.x,
-      testBtn.y,
-      testBtn.w,
-      testBtn.h,
-      20,
-      "#326ef0",
-      WHITE,
-      3
+      testBtn.x, testBtn.y, testBtn.w, testBtn.h,
+      20, "#326ef0", WHITE, 3
     );
 
-
-    drawText(
-      "TAP TO TEST SOUND",
-      "bold 30px Arial",
-      WHITE,
-      canvas.width / 2,
-      testBtn.y + testBtn.h / 2
-    );
-
+    drawText("TAP TO TEST SOUND", "bold 30px Arial", WHITE, canvas.width / 2, testBtn.y + testBtn.h / 2);
 
     if (audioTested) {
+      drawText("Did you hear the beep?", "bold 28px Arial", WHITE, canvas.width / 2, 440);
 
-      drawText(
-        "Did you hear the beep?",
-        "bold 28px Arial",
-        WHITE,
-        canvas.width / 2,
-        440
-      );
+      drawRoundRect(yesBtn.x, yesBtn.y, yesBtn.w, yesBtn.h, 20, "#28d246", null, 0);
+      drawText("YES", "bold 32px Arial", WHITE, yesBtn.x + yesBtn.w / 2, yesBtn.y + yesBtn.h / 2);
 
-
-      drawRoundRect(
-        yesBtn.x,
-        yesBtn.y,
-        yesBtn.w,
-        yesBtn.h,
-        20,
-        "#28d246",
-        null,
-        0
-      );
-
-
-      drawText(
-        "YES",
-        "bold 32px Arial",
-        WHITE,
-        yesBtn.x + yesBtn.w / 2,
-        yesBtn.y + yesBtn.h / 2
-      );
-
-
-      drawRoundRect(
-        noBtn.x,
-        noBtn.y,
-        noBtn.w,
-        noBtn.h,
-        20,
-        "#eb2828",
-        null,
-        0
-      );
-
-
-      drawText(
-        "NO",
-        "bold 32px Arial",
-        WHITE,
-        noBtn.x + noBtn.w / 2,
-        noBtn.y + noBtn.h / 2
-      );
+      drawRoundRect(noBtn.x, noBtn.y, noBtn.w, noBtn.h, 20, "#eb2828", null, 0);
+      drawText("NO", "bold 32px Arial", WHITE, noBtn.x + noBtn.w / 2, noBtn.y + noBtn.h / 2);
     }
 
-
     if (audioWarning) {
-
       drawText(
         "Turn OFF Silent/Mute Mode and increase volume!",
         "bold 20px Arial",
@@ -1262,270 +690,91 @@ function loop() {
     }
   }
 
-
-  /*
-    MENU
-  */
-
+  /* MENU */
   else if (state === "menu") {
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle =
-      BLACK;
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    drawText(
-      "IQ TEST",
-      "bold 72px Arial",
-      WHITE,
-      canvas.width / 2,
-      170
-    );
-
-
-    drawText(
-      "MEMORY & REACTION TEST",
-      "bold 38px Arial",
-      TEXT_MID,
-      canvas.width / 2,
-      280
-    );
-
-
-    drawText(
-      "TAP ANYWHERE TO BEGIN",
-      "bold 38px Arial",
-      WHITE,
-      canvas.width / 2,
-      430
-    );
-
-
-    drawText(
-      "FOLLOW THE COLOURS",
-      "24px Arial",
-      TEXT_DARK,
-      canvas.width / 2,
-      500
-    );
+    drawText("IQ TEST", "bold 72px Arial", WHITE, canvas.width / 2, 170);
+    drawText("MEMORY & REACTION TEST", "bold 38px Arial", TEXT_MID, canvas.width / 2, 280);
+    drawText("TAP ANYWHERE TO BEGIN", "bold 38px Arial", WHITE, canvas.width / 2, 430);
+    drawText("FOLLOW THE COLOURS", "24px Arial", TEXT_DARK, canvas.width / 2, 500);
   }
 
-
-  /*
-    SHOWING
-  */
-
+  /* SHOWING */
   else if (state === "showing") {
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle =
-      BLACK;
+    drawText("WATCH CAREFULLY", "bold 38px Arial", WHITE, canvas.width / 2, 70);
 
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    drawText(
-      "WATCH CAREFULLY",
-      "bold 38px Arial",
-      WHITE,
-      canvas.width / 2,
-      70
-    );
-
-
-    const cycle =
-      FLASH_DURATION +
-      PAUSE_DURATION;
-
-    const elapsed =
-      now - lastFlash;
-
+    const cycle = FLASH_DURATION + PAUSE_DURATION;
+    const elapsed = now - lastFlash;
 
     if (elapsed >= cycle) {
-
       showIndex++;
-
-      lastFlash =
-        now;
-
-      playedToneForStep =
-        false;
+      lastFlash = now;
+      playedToneForStep = false;
     }
 
+    if (showIndex < sequence.length) {
+      if (elapsed < FLASH_DURATION) {
+        activeColor = sequence[showIndex];
+        drawButtons(activeColor);
 
-    if (
-      showIndex <
-      sequence.length
-    ) {
-
-      if (
-        elapsed <
-        FLASH_DURATION
-      ) {
-
-        activeColor =
-          sequence[showIndex];
-
-        drawButtons(
-          activeColor
-        );
-
-
-        if (
-          elapsed < 100 &&
-          !playedToneForStep
-        ) {
-
-          playColorSound(
-            activeColor
-          );
-
-          playedToneForStep =
-            true;
+        if (elapsed < 100 && !playedToneForStep) {
+          playColorSound(activeColor);
+          playedToneForStep = true;
         }
-
       } else {
-
         drawButtons(-1);
       }
-
     } else {
-
-      state =
-        "waiting";
+      state = "waiting";
     }
   }
 
-
-  /*
-    WAITING
-  */
-
+  /* WAITING */
   else if (state === "waiting") {
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle =
-      BLACK;
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    drawText(
-      "YOUR TURN",
-      "bold 38px Arial",
-      WHITE,
-      canvas.width / 2,
-      70
-    );
-
-
+    drawText("YOUR TURN", "bold 38px Arial", WHITE, canvas.width / 2, 70);
     drawButtons(-1);
 
+    ctx.font = "24px Arial";
+    ctx.fillStyle = "#8c8c8c";
+    ctx.textAlign = "left";
+    ctx.fillText(`ROUND ${turn}`, 100, 30);
 
-    ctx.font =
-      "24px Arial";
-
-    ctx.fillStyle =
-      "#8c8c8c";
-
-    ctx.textAlign =
-      "left";
-
-    ctx.fillText(
-      `ROUND ${turn}`,
-      100,
-      30
-    );
-
-
-    ctx.textAlign =
-      "right";
-
-    ctx.fillText(
-      `SCORE: ${score}`,
-      900,
-      30
-    );
+    ctx.textAlign = "right";
+    ctx.fillText(`SCORE: ${score}`, 900, 30);
   }
 
-
-  /*
-    CORRECT
-  */
-
+  /* CORRECT */
   else if (state === "next") {
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle =
-      BLACK;
-
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-
-    drawText(
-      "CORRECT",
-      "bold 72px Arial",
-      WHITE,
-      canvas.width / 2,
-      canvas.height / 2
-    );
+    drawText("CORRECT", "bold 72px Arial", WHITE, canvas.width / 2, canvas.height / 2);
   }
 
-
-  /*
-    JUMPSCARE
-  */
-
+  /* JUMPSCARE */
   else if (state === "scare") {
+    const elapsed = now - scareStart;
 
-    const elapsed =
-      now - scareStart;
-
-
-    if (
-      elapsed <
-      SCARE_DURATION
-    ) {
-
+    if (elapsed < SCARE_DURATION) {
       drawFace();
-
     } else {
-
       stopJumpscareSound();
-
-      state =
-        "audio_check";
-
-      audioTested =
-        false;
-
-      audioWarning =
-        false;
+      state = "audio_check";
+      audioTested = false;
+      audioWarning = false;
     }
   }
-
 
   requestAnimationFrame(loop);
 }
-
 
 loop();
 
